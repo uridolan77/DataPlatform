@@ -117,19 +117,24 @@ builder.Services.AddScoped<ISecurityScanner, SecurityScanner>();
 builder.Services.AddScoped<IVulnerabilityRepository, VulnerabilityRepository>();
 builder.Services.AddScoped<IComplianceService, ComplianceService>();
 builder.Services.AddScoped<IDataLineageService, DataLineageService>();
+builder.Services.AddScoped<ICatalogService, CatalogService>();
 
 // Register repositories
-// Use DatabaseAlertRepository if SQL Server connection string is configured, otherwise use file-based AlertRepository
+// Use database repositories if SQL Server connection string is configured, otherwise use file-based repositories
 var connectionString = builder.Configuration.GetConnectionString("SqlServer");
 if (!string.IsNullOrEmpty(connectionString))
 {
+    // Register database repositories
     builder.Services.AddScoped<IAlertRepository, DatabaseAlertRepository>();
-    builder.Logger.LogInformation("Using DatabaseAlertRepository with SQL Server");
+    builder.Services.AddScoped<IDataLineageRepository, DatabaseDataLineageRepository>();
+    builder.Logger.LogInformation("Using database repositories with SQL Server");
 }
 else
 {
+    // Register file-based repositories
     builder.Services.AddScoped<IAlertRepository, AlertRepository>();
-    builder.Logger.LogInformation("Using file-based AlertRepository");
+    builder.Services.AddScoped<IDataLineageRepository, DataLineageRepository>();
+    builder.Logger.LogInformation("Using file-based repositories");
 }
 
 // Register background services

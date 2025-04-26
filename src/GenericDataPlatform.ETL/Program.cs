@@ -27,6 +27,8 @@ using GenericDataPlatform.ETL.Workflows;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Monitoring;
 using GenericDataPlatform.ETL.Workflows.Repositories;
+using GenericDataPlatform.ETL.Workflows.Tracking;
+using GenericDataPlatform.Security.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -135,6 +137,13 @@ builder.Services.AddScoped<IWorkflowMonitor, WorkflowMonitor>();
 builder.Services.AddScoped<IWorkflowEngine, WorkflowEngine>();
 builder.Services.AddScoped<IEtlWorkflowService, EtlWorkflowService>();
 builder.Services.AddScoped<IWorkflowDefinitionBuilder, WorkflowDefinitionBuilder>();
+
+// Register lineage tracking services
+builder.Services.AddHttpClient<IDataLineageService, DataLineageService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:SecurityService"] ?? "https://localhost:5001");
+});
+builder.Services.AddScoped<ILineageTracker, LineageTracker>();
 
 var app = builder.Build();
 

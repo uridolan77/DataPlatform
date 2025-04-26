@@ -1,9 +1,11 @@
 using System;
 using System.Text;
+using GenericDataPlatform.Common.Configuration;
 using GenericDataPlatform.Common.Logging;
 using GenericDataPlatform.Common.Observability;
 using GenericDataPlatform.Common.Observability.HealthChecks;
 using GenericDataPlatform.Common.Security.Secrets;
+using GenericDataPlatform.Gateway.Aggregators;
 using GenericDataPlatform.Gateway.Configuration;
 using GenericDataPlatform.Gateway.Identity;
 using GenericDataPlatform.Gateway.Middleware;
@@ -19,6 +21,7 @@ using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Ocelot.Provider.Polly;
 using Ocelot.Cache.CacheManager;
+using Ocelot.Multiplexer;
 using Serilog;
 
 // Configure Serilog
@@ -34,6 +37,7 @@ if (builder.Environment.IsDevelopment())
 // Add Ocelot configuration
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile("ocelot.enhanced.json", optional: true, reloadOnChange: true);
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -75,10 +79,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
-    
+
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Lockout.MaxFailedAccessAttempts = 5;
-    
+
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -91,7 +95,7 @@ var identityServerBuilder = builder.Services.AddIdentityServer(options =>
     options.Events.RaiseInformationEvents = true;
     options.Events.RaiseFailureEvents = true;
     options.Events.RaiseSuccessEvents = true;
-    
+
     options.EmitStaticAudienceClaim = true;
 })
 .AddAspNetIdentity<ApplicationUser>()
@@ -129,7 +133,7 @@ if (builder.Environment.IsDevelopment())
     // Add Google authentication
     var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
     var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    
+
     if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
     {
         builder.Services.AddAuthentication()
@@ -140,11 +144,11 @@ if (builder.Environment.IsDevelopment())
                 options.ClientSecret = googleClientSecret;
             });
     }
-    
+
     // Add Microsoft authentication
     var microsoftClientId = builder.Configuration["Authentication:Microsoft:ClientId"];
     var microsoftClientSecret = builder.Configuration["Authentication:Microsoft:ClientSecret"];
-    
+
     if (!string.IsNullOrEmpty(microsoftClientId) && !string.IsNullOrEmpty(microsoftClientSecret))
     {
         builder.Services.AddAuthentication()
@@ -182,6 +186,12 @@ builder.Services.AddOcelot(builder.Configuration)
     {
         x.WithDictionaryHandle();
     });
+
+// Register aggregators
+builder.Services.AddSingleton<IDefinedAggregator, DataCompleteAggregator>();
+
+// Add centralized configuration
+builder.Services.AddCentralizedConfiguration(builder.Configuration);
 
 // Configure API Gateway services
 builder.Services.AddScoped<IClientStore, ClientStore>();

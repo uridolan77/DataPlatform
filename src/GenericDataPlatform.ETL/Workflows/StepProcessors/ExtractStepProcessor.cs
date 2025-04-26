@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GenericDataPlatform.ETL.Extractors.Base;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Models;
+using GenericDataPlatform.ETL.Workflows.Tracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,49 +15,55 @@ namespace GenericDataPlatform.ETL.Workflows.StepProcessors
         private readonly ILogger<ExtractStepProcessor> _logger;
         private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<string, IExtractor> _extractors;
-        
+        private readonly ILineageTracker _lineageTracker;
+
         public string StepType => WorkflowStepType.Extract.ToString();
-        
+
         public ExtractStepProcessor(
             ILogger<ExtractStepProcessor> logger,
             IServiceProvider serviceProvider,
-            IEnumerable<IExtractor> extractors)
+            IEnumerable<IExtractor> extractors,
+            ILineageTracker lineageTracker)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
             _extractors = new Dictionary<string, IExtractor>();
-            
+            _lineageTracker = lineageTracker;
+
             foreach (var extractor in extractors)
             {
                 _extractors[extractor.Type] = extractor;
             }
         }
-        
+
         public async Task<object> ProcessStepAsync(WorkflowStep step, WorkflowContext context)
         {
             try
             {
                 _logger.LogInformation("Processing extract step {StepId}", step.Id);
-                
+
                 // Get extractor type
                 if (!step.Configuration.TryGetValue("extractorType", out var extractorTypeObj))
                 {
                     throw new ArgumentException($"Extractor type not specified for step {step.Id}");
                 }
-                
+
                 var extractorType = extractorTypeObj.ToString();
-                
+
                 // Get extractor
                 if (!_extractors.TryGetValue(extractorType, out var extractor))
                 {
                     throw new ArgumentException($"Extractor of type {extractorType} not found");
                 }
-                
+
                 // Execute extractor
                 var result = await extractor.ExtractAsync(step.Configuration, context.Source, context.Parameters);
-                
+
+                // Track lineage
+                await _lineageTracker.TrackExtractionAsync(step, context, result);
+
                 _logger.LogInformation("Extract step {StepId} completed successfully", step.Id);
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -65,16 +72,16 @@ namespace GenericDataPlatform.ETL.Workflows.StepProcessors
                 throw;
             }
         }
-        
+
         public async Task<bool> ValidateStepConfigurationAsync(WorkflowStep step)
         {
             if (!step.Configuration.TryGetValue("extractorType", out var extractorTypeObj))
             {
                 return false;
             }
-            
+
             var extractorType = extractorTypeObj.ToString();
-            
+
             return _extractors.ContainsKey(extractorType);
         }
     }

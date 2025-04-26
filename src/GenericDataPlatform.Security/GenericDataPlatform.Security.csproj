@@ -48,6 +48,8 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Database\Scripts\CreateAlertTables.sql" />
+    <EmbeddedResource Include="Database\Scripts\CreateLineageTables.sql" />
+    <EmbeddedResource Include="Database\Scripts\CreateCatalogTables.sql" />
   </ItemGroup>
 
   <ItemGroup>
