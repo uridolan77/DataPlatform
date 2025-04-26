@@ -1,0 +1,6 @@
+@GenericDataPlatform.IngestionService_HostAddress = http://localhost:5064
+
+GET {{GenericDataPlatform.IngestionService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

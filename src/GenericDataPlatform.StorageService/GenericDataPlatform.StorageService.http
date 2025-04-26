@@ -1,0 +1,6 @@
+@GenericDataPlatform.StorageService_HostAddress = http://localhost:5207
+
+GET {{GenericDataPlatform.StorageService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "I8kxQfhasOY=",
+  "success": true,
+  "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.StorageService\\GenericDataPlatform.StorageService.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.4\\microsoft.aspnetcore.openapi.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

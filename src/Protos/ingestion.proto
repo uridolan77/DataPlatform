@@ -1,0 +1,156 @@
+syntax = "proto3";
+
+option csharp_namespace = "GenericDataPlatform.Protos";
+
+package ingestion;
+
+service IngestionService {
+  rpc GetDataSources (GetDataSourcesRequest) returns (GetDataSourcesResponse);
+  rpc GetDataSource (GetDataSourceRequest) returns (DataSourceDefinition);
+  rpc CreateDataSource (CreateDataSourceRequest) returns (DataSourceDefinition);
+  rpc UpdateDataSource (UpdateDataSourceRequest) returns (DataSourceDefinition);
+  rpc DeleteDataSource (DeleteDataSourceRequest) returns (DeleteDataSourceResponse);
+  
+  rpc StartIngestion (StartIngestionRequest) returns (StartIngestionResponse);
+  rpc GetIngestionStatus (GetIngestionStatusRequest) returns (GetIngestionStatusResponse);
+  rpc CancelIngestion (CancelIngestionRequest) returns (CancelIngestionResponse);
+  
+  rpc ValidateConnection (ValidateConnectionRequest) returns (ValidateConnectionResponse);
+  rpc InferSchema (InferSchemaRequest) returns (InferSchemaResponse);
+}
+
+message GetDataSourcesRequest {
+  optional string type_filter = 1;
+  optional int32 page = 2;
+  optional int32 page_size = 3;
+}
+
+message GetDataSourcesResponse {
+  repeated DataSourceDefinition sources = 1;
+  int32 total_count = 2;
+}
+
+message GetDataSourceRequest {
+  string source_id = 1;
+}
+
+message CreateDataSourceRequest {
+  DataSourceDefinition source = 1;
+}
+
+message UpdateDataSourceRequest {
+  DataSourceDefinition source = 1;
+}
+
+message DeleteDataSourceRequest {
+  string source_id = 1;
+}
+
+message DeleteDataSourceResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message StartIngestionRequest {
+  string source_id = 1;
+  map<string, string> parameters = 2;
+  bool full_refresh = 3;
+}
+
+message StartIngestionResponse {
+  string job_id = 1;
+  string status = 2;
+}
+
+message GetIngestionStatusRequest {
+  string job_id = 1;
+}
+
+message GetIngestionStatusResponse {
+  string job_id = 1;
+  string status = 2;
+  int64 records_processed = 3;
+  int64 errors = 4;
+  string start_time = 5;
+  string end_time = 6;
+  repeated string error_messages = 7;
+}
+
+message CancelIngestionRequest {
+  string job_id = 1;
+}
+
+message CancelIngestionResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ValidateConnectionRequest {
+  DataSourceDefinition source = 1;
+}
+
+message ValidateConnectionResponse {
+  bool is_valid = 1;
+  string message = 2;
+}
+
+message InferSchemaRequest {
+  DataSourceDefinition source = 1;
+  int32 sample_size = 2;
+}
+
+message InferSchemaResponse {
+  DataSchema schema = 1;
+}
+
+message DataSourceDefinition {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4;
+  map<string, string> connection_properties = 5;
+  DataSchema schema = 6;
+  string ingest_mode = 7;
+  string refresh_policy = 8;
+  map<string, string> validation_rules = 9;
+  map<string, string> metadata_properties = 10;
+}
+
+message DataSchema {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4;
+  repeated SchemaField fields = 5;
+  SchemaVersion version = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message SchemaField {
+  string name = 1;
+  string description = 2;
+  string type = 3;
+  bool is_required = 4;
+  bool is_array = 5;
+  string default_value = 6;
+  ValidationRules validation = 7;
+  repeated SchemaField nested_fields = 8;
+}
+
+message ValidationRules {
+  optional int32 min_length = 1;
+  optional int32 max_length = 2;
+  optional string pattern = 3;
+  optional double min_value = 4;
+  optional double max_value = 5;
+  repeated string allowed_values = 6;
+  optional string custom_validation = 7;
+}
+
+message SchemaVersion {
+  string version_number = 1;
+  string effective_date = 2;
+  string previous_version = 3;
+  string change_description = 4;
+}

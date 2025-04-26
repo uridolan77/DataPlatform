@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+option csharp_namespace = "GenericDataPlatform.Protos";
+
+package models;
+
+// Common data models shared across services
+
+message DataSourceDefinition {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4;
+  map<string, string> connection_properties = 5;
+  DataSchema schema = 6;
+  string ingest_mode = 7;
+  string refresh_policy = 8;
+  map<string, string> validation_rules = 9;
+  map<string, string> metadata_properties = 10;
+}
+
+message DataSchema {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string type = 4;
+  repeated SchemaField fields = 5;
+  SchemaVersion version = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message SchemaField {
+  string name = 1;
+  string description = 2;
+  string type = 3;
+  bool is_required = 4;
+  bool is_array = 5;
+  string default_value = 6;
+  ValidationRules validation = 7;
+  repeated SchemaField nested_fields = 8;
+}
+
+message ValidationRules {
+  optional int32 min_length = 1;
+  optional int32 max_length = 2;
+  optional string pattern = 3;
+  optional double min_value = 4;
+  optional double max_value = 5;
+  repeated string allowed_values = 6;
+  optional string custom_validation = 7;
+}
+
+message SchemaVersion {
+  string version_number = 1;
+  string effective_date = 2;
+  string previous_version = 3;
+  string change_description = 4;
+}
+
+message DataRecord {
+  string id = 1;
+  string schema_id = 2;
+  string source_id = 3;
+  map<string, bytes> data = 4;
+  map<string, string> metadata = 5;
+  string created_at = 6;
+  string updated_at = 7;
+  string version = 8;
+}
+
+message PipelineDefinition {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string source_id = 4;
+  repeated PipelineStage stages = 5;
+  map<string, string> configuration = 6;
+  string created_at = 7;
+  string updated_at = 8;
+  string version = 9;
+}
+
+message PipelineStage {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  map<string, string> configuration = 4;
+  repeated string depends_on = 5;
+}
+
+message PipelineStatus {
+  string pipeline_id = 1;
+  string status = 2;
+  string start_time = 3;
+  string end_time = 4;
+  int64 records_processed = 5;
+  map<string, string> stage_statuses = 6;
+  repeated string errors = 7;
+}

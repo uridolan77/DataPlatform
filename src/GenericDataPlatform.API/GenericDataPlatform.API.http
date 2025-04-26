@@ -1,0 +1,6 @@
+@GenericDataPlatform.API_HostAddress = http://localhost:5227
+
+GET {{GenericDataPlatform.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

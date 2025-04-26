@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+option csharp_namespace = "GenericDataPlatform.Protos";
+
+package storage;
+
+service StorageService {
+  rpc UploadFile (stream UploadFileRequest) returns (UploadFileResponse);
+  rpc DownloadFile (DownloadFileRequest) returns (stream DownloadFileResponse);
+  rpc GetMetadata (GetMetadataRequest) returns (StorageMetadata);
+  rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
+  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+  rpc CopyFile (CopyFileRequest) returns (CopyFileResponse);
+  rpc GetStatistics (GetStatisticsRequest) returns (StorageStatistics);
+}
+
+message UploadFileRequest {
+  oneof request {
+    FileMetadata metadata = 1;
+    bytes chunk_data = 2;
+  }
+}
+
+message FileMetadata {
+  string source_id = 1;
+  string filename = 2;
+  string content_type = 3;
+  int64 total_size = 4;
+  map<string, string> custom_metadata = 5;
+  bool compress = 6;
+  bool encrypt = 7;
+  string storage_tier = 8;
+}
+
+message UploadFileResponse {
+  string file_id = 1;
+  string path = 2;
+  string checksum = 3;
+}
+
+message DownloadFileRequest {
+  string path = 1;
+  int64 start_position = 2;
+  int64 chunk_size = 3;
+}
+
+message DownloadFileResponse {
+  oneof response {
+    StorageMetadata metadata = 1;
+    bytes chunk_data = 2;
+  }
+  bool is_last_chunk = 3;
+}
+
+message GetMetadataRequest {
+  string path = 1;
+}
+
+message ListFilesRequest {
+  string prefix = 1;
+  bool recursive = 2;
+  int32 max_results = 3;
+  string continuation_token = 4;
+}
+
+message ListFilesResponse {
+  repeated StorageItem items = 1;
+  string continuation_token = 2;
+}
+
+message StorageItem {
+  string path = 1;
+  bool is_directory = 2;
+  StorageMetadata metadata = 3;
+}
+
+message StorageMetadata {
+  string id = 1;
+  string source_id = 2;
+  string content_type = 3;
+  string filename = 4;
+  int64 size = 5;
+  string created_at = 6;
+  string checksum = 7;
+  string storage_tier = 8;
+  bool is_compressed = 9;
+  bool is_encrypted = 10;
+  map<string, string> custom_metadata = 11;
+}
+
+message DeleteFileRequest {
+  string path = 1;
+}
+
+message DeleteFileResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message CopyFileRequest {
+  string source_path = 1;
+  string destination_path = 2;
+}
+
+message CopyFileResponse {
+  string destination_path = 1;
+}
+
+message GetStatisticsRequest {
+  string prefix = 1;
+}
+
+message StorageStatistics {
+  int64 total_items = 1;
+  int64 total_size = 2;
+  map<string, int64> items_by_type = 3;
+  map<string, int64> size_by_type = 4;
+}
