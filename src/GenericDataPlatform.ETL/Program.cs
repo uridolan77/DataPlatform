@@ -50,7 +50,15 @@ builder.Services.AddScoped<IEnricher, LookupEnricher>();
 builder.Services.AddScoped<ILoader, DatabaseLoader>();
 
 // Pipeline processor
-builder.Services.AddScoped<IPipelineProcessor, PipelineProcessor>();
+builder.Services.AddScoped<IPipelineProcessor>(sp => new PipelineProcessor(
+    sp,
+    sp.GetServices<IExtractor>(),
+    sp.GetServices<ITransformer>(),
+    sp.GetServices<ILoader>(),
+    sp.GetServices<IValidator>(),
+    sp.GetServices<IEnricher>(),
+    sp.GetRequiredService<ILogger<PipelineProcessor>>()
+));
 
 // Workflow engine components
 builder.Services.AddScoped<IWorkflowEngine, WorkflowEngine>();

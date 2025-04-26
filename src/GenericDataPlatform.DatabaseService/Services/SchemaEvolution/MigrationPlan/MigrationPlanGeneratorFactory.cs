@@ -36,12 +36,14 @@ namespace GenericDataPlatform.DatabaseService.Services.SchemaEvolution.Migration
                         loggerFactory.CreateLogger<MySqlMigrationPlanGenerator>());
 
                 case DatabaseType.Oracle:
-                    // Not implemented yet
-                    throw new NotImplementedException($"Migration plan generator for {databaseType} is not implemented yet");
+                    return new OracleMigrationPlanGenerator(
+                        schemaComparer,
+                        loggerFactory.CreateLogger<OracleMigrationPlanGenerator>());
 
                 case DatabaseType.SQLite:
-                    // Not implemented yet
-                    throw new NotImplementedException($"Migration plan generator for {databaseType} is not implemented yet");
+                    return new SqliteMigrationPlanGenerator(
+                        schemaComparer,
+                        loggerFactory.CreateLogger<SqliteMigrationPlanGenerator>());
 
                 default:
                     throw new ArgumentException($"Unsupported database type: {databaseType}");

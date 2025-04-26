@@ -30,8 +30,116 @@ namespace GenericDataPlatform.ETL.Workflows
 
         public async Task<WorkflowExecution> ExecuteWorkflowAsync(string workflowId, Dictionary<string, object> parameters = null)
         {
-            // In a real implementation, this would load the workflow from a repository
-            throw new NotImplementedException("Loading workflows by ID is not implemented");
+            // In a real implementation, this would load the workflow from a database repository
+            // For this implementation, we'll use an in-memory dictionary to store workflows
+
+            // Check if the workflow exists in our in-memory store
+            var workflow = await GetWorkflowByIdAsync(workflowId);
+
+            if (workflow == null)
+            {
+                throw new KeyNotFoundException($"Workflow with ID {workflowId} not found");
+            }
+
+            // Execute the workflow
+            return await ExecuteWorkflowAsync(workflow, parameters);
+        }
+
+        private async Task<WorkflowDefinition> GetWorkflowByIdAsync(string workflowId)
+        {
+            // In a real implementation, this would query a database or other persistent store
+            // For this implementation, we'll create a simple workflow for demonstration purposes
+
+            // This is a simple in-memory cache of workflows
+            // In a production system, this would be stored in a database
+            var workflows = new Dictionary<string, WorkflowDefinition>();
+
+            // Create a sample workflow if it doesn't exist
+            if (!workflows.ContainsKey("sample-workflow"))
+            {
+                workflows["sample-workflow"] = new WorkflowDefinition
+                {
+                    Id = "sample-workflow",
+                    Name = "Sample Workflow",
+                    Description = "A sample workflow for demonstration purposes",
+                    Version = "1.0",
+                    Steps = new List<WorkflowStep>
+                    {
+                        new WorkflowStep
+                        {
+                            Id = "extract-step",
+                            Name = "Extract Data",
+                            Description = "Extract data from a REST API",
+                            Type = WorkflowStepType.Extract,
+                            Configuration = new Dictionary<string, object>
+                            {
+                                ["extractorType"] = "RestApi",
+                                ["url"] = "https://api.example.com/data",
+                                ["method"] = "GET"
+                            },
+                            DependsOn = new List<string>(),
+                            ErrorHandling = new WorkflowStepErrorHandling
+                            {
+                                OnError = WorkflowErrorAction.StopWorkflow
+                            }
+                        },
+                        new WorkflowStep
+                        {
+                            Id = "transform-step",
+                            Name = "Transform Data",
+                            Description = "Transform the extracted data",
+                            Type = WorkflowStepType.Transform,
+                            Configuration = new Dictionary<string, object>
+                            {
+                                ["transformerType"] = "Json",
+                                ["mappings"] = new Dictionary<string, string>
+                                {
+                                    ["id"] = "$.id",
+                                    ["name"] = "$.name",
+                                    ["value"] = "$.value"
+                                }
+                            },
+                            DependsOn = new List<string> { "extract-step" },
+                            ErrorHandling = new WorkflowStepErrorHandling
+                            {
+                                OnError = WorkflowErrorAction.StopWorkflow
+                            }
+                        },
+                        new WorkflowStep
+                        {
+                            Id = "load-step",
+                            Name = "Load Data",
+                            Description = "Load the transformed data",
+                            Type = WorkflowStepType.Load,
+                            Configuration = new Dictionary<string, object>
+                            {
+                                ["loaderType"] = "Database",
+                                ["connectionString"] = "Server=localhost;Database=MyDb;User Id=sa;Password=P@ssw0rd;",
+                                ["tableName"] = "ProcessedData"
+                            },
+                            DependsOn = new List<string> { "transform-step" },
+                            ErrorHandling = new WorkflowStepErrorHandling
+                            {
+                                OnError = WorkflowErrorAction.StopWorkflow
+                            }
+                        }
+                    },
+                    ErrorHandling = new WorkflowErrorHandling
+                    {
+                        DefaultAction = WorkflowErrorAction.StopWorkflow,
+                        MaxErrors = 3,
+                        LogDetailedErrors = true
+                    }
+                };
+            }
+
+            // Return the requested workflow
+            if (workflowId == "sample-workflow" || workflows.ContainsKey(workflowId))
+            {
+                return await Task.FromResult(workflows.TryGetValue(workflowId, out var workflow) ? workflow : workflows["sample-workflow"]);
+            }
+
+            return null;
         }
 
         public async Task<WorkflowExecution> ExecuteWorkflowAsync(WorkflowDefinition workflow, Dictionary<string, object> parameters = null)
@@ -82,7 +190,7 @@ namespace GenericDataPlatform.ETL.Workflows
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error executing workflow {WorkflowId}", workflow.Id);
-                    
+
                     execution.Status = WorkflowExecutionStatus.Failed;
                     execution.EndTime = DateTime.UtcNow;
                     execution.Errors.Add(new WorkflowExecutionError
@@ -121,16 +229,16 @@ namespace GenericDataPlatform.ETL.Workflows
             if (_executionCancellationTokens.TryGetValue(executionId, out var cts))
             {
                 cts.Cancel();
-                
+
                 if (_executions.TryGetValue(executionId, out var execution))
                 {
                     execution.Status = WorkflowExecutionStatus.Cancelled;
                     execution.EndTime = DateTime.UtcNow;
                 }
-                
+
                 return true;
             }
-            
+
             return false;
         }
 
@@ -160,7 +268,7 @@ namespace GenericDataPlatform.ETL.Workflows
         {
             try
             {
-                _logger.LogInformation("Starting workflow execution {ExecutionId} for workflow {WorkflowId}", 
+                _logger.LogInformation("Starting workflow execution {ExecutionId} for workflow {WorkflowId}",
                     execution.Id, execution.WorkflowId);
 
                 // Initialize step statuses
@@ -168,7 +276,7 @@ namespace GenericDataPlatform.ETL.Workflows
                 foreach (var step in context.Workflow.Steps)
                 {
                     stepStatuses[step.Id] = WorkflowStepExecutionStatus.NotStarted;
-                    
+
                     // Create step execution record
                     var stepExecution = new WorkflowStepExecution
                     {
@@ -178,7 +286,7 @@ namespace GenericDataPlatform.ETL.Workflows
                         StartTime = DateTime.MinValue,
                         Errors = new List<WorkflowExecutionError>()
                     };
-                    
+
                     execution.StepExecutions.Add(stepExecution);
                 }
 
@@ -187,27 +295,27 @@ namespace GenericDataPlatform.ETL.Workflows
                 do
                 {
                     progress = false;
-                    
+
                     // Check for cancellation
                     context.CancellationToken.ThrowIfCancellationRequested();
-                    
+
                     // Find steps that can be executed
                     var executableSteps = context.Workflow.Steps
-                        .Where(s => stepStatuses[s.Id] == WorkflowStepExecutionStatus.NotStarted && 
+                        .Where(s => stepStatuses[s.Id] == WorkflowStepExecutionStatus.NotStarted &&
                                    AreDependenciesCompleted(s, stepStatuses))
                         .ToList();
-                    
+
                     if (executableSteps.Any())
                     {
                         progress = true;
-                        
+
                         // Execute each step
                         foreach (var step in executableSteps)
                         {
                             await ExecuteStepAsync(step, execution, context, stepStatuses);
                         }
                     }
-                    
+
                     // Check if there are any running steps
                     if (!progress && stepStatuses.Values.Any(s => s == WorkflowStepExecutionStatus.Running))
                     {
@@ -231,17 +339,17 @@ namespace GenericDataPlatform.ETL.Workflows
                 {
                     execution.Status = WorkflowExecutionStatus.Failed;
                 }
-                
+
                 execution.EndTime = DateTime.UtcNow;
-                
-                _logger.LogInformation("Workflow execution {ExecutionId} completed with status {Status}", 
+
+                _logger.LogInformation("Workflow execution {ExecutionId} completed with status {Status}",
                     execution.Id, execution.Status);
             }
             catch (OperationCanceledException)
             {
                 execution.Status = WorkflowExecutionStatus.Cancelled;
                 execution.EndTime = DateTime.UtcNow;
-                
+
                 _logger.LogInformation("Workflow execution {ExecutionId} was cancelled", execution.Id);
             }
             catch (Exception ex)
@@ -256,48 +364,48 @@ namespace GenericDataPlatform.ETL.Workflows
                     StackTrace = ex.StackTrace,
                     Timestamp = DateTime.UtcNow
                 });
-                
+
                 _logger.LogError(ex, "Error executing workflow {WorkflowId}", execution.WorkflowId);
             }
         }
 
         private async Task ExecuteStepAsync(
-            WorkflowStep step, 
-            WorkflowExecution execution, 
+            WorkflowStep step,
+            WorkflowExecution execution,
             WorkflowContext context,
             Dictionary<string, WorkflowStepExecutionStatus> stepStatuses)
         {
             // Get step execution record
             var stepExecution = execution.StepExecutions.First(s => s.StepId == step.Id);
-            
+
             try
             {
                 // Check conditions
                 if (step.Conditions.Any() && !await EvaluateConditionsAsync(step.Conditions, context))
                 {
                     _logger.LogInformation("Skipping step {StepId} because conditions are not met", step.Id);
-                    
+
                     stepStatuses[step.Id] = WorkflowStepExecutionStatus.Skipped;
                     stepExecution.Status = WorkflowStepExecutionStatus.Skipped;
                     stepExecution.StartTime = DateTime.UtcNow;
                     stepExecution.EndTime = DateTime.UtcNow;
-                    
+
                     return;
                 }
-                
+
                 // Update status
                 stepStatuses[step.Id] = WorkflowStepExecutionStatus.Running;
                 stepExecution.Status = WorkflowStepExecutionStatus.Running;
                 stepExecution.StartTime = DateTime.UtcNow;
-                
+
                 _logger.LogInformation("Executing step {StepId} of type {StepType}", step.Id, step.Type);
-                
+
                 // Get step processor
                 if (!_stepProcessors.TryGetValue(step.Type.ToString(), out var processor))
                 {
                     throw new InvalidOperationException($"No processor found for step type {step.Type}");
                 }
-                
+
                 // Collect input from dependent steps
                 var stepInput = new Dictionary<string, object>();
                 if (step.DependsOn != null && step.DependsOn.Any())
@@ -310,27 +418,27 @@ namespace GenericDataPlatform.ETL.Workflows
                         }
                     }
                 }
-                
+
                 stepExecution.Input = stepInput;
-                
+
                 // Execute step
                 var output = await processor.ProcessStepAsync(step, context);
-                
+
                 // Store output
                 context.StepOutputs[step.Id] = output;
                 stepExecution.Output = new Dictionary<string, object> { ["result"] = output };
-                
+
                 // Update status
                 stepStatuses[step.Id] = WorkflowStepExecutionStatus.Completed;
                 stepExecution.Status = WorkflowStepExecutionStatus.Completed;
                 stepExecution.EndTime = DateTime.UtcNow;
-                
+
                 _logger.LogInformation("Step {StepId} completed successfully", step.Id);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error executing step {StepId}", step.Id);
-                
+
                 // Record error
                 var error = new WorkflowExecutionError
                 {
@@ -341,10 +449,10 @@ namespace GenericDataPlatform.ETL.Workflows
                     StackTrace = ex.StackTrace,
                     Timestamp = DateTime.UtcNow
                 };
-                
+
                 stepExecution.Errors.Add(error);
                 execution.Errors.Add(error);
-                
+
                 // Handle error based on step configuration
                 switch (step.ErrorHandling.OnError)
                 {
@@ -353,24 +461,24 @@ namespace GenericDataPlatform.ETL.Workflows
                         stepExecution.Status = WorkflowStepExecutionStatus.Failed;
                         stepExecution.EndTime = DateTime.UtcNow;
                         throw new WorkflowStepFailedException($"Step {step.Id} failed and is configured to stop the workflow", ex);
-                    
+
                     case WorkflowErrorAction.ContinueWorkflow:
                         stepStatuses[step.Id] = WorkflowStepExecutionStatus.Failed;
                         stepExecution.Status = WorkflowStepExecutionStatus.Failed;
                         stepExecution.EndTime = DateTime.UtcNow;
                         _logger.LogWarning("Step {StepId} failed but workflow will continue", step.Id);
                         break;
-                    
+
                     case WorkflowErrorAction.RetryStep:
                         if (stepExecution.RetryCount < step.RetryCount)
                         {
                             stepExecution.RetryCount++;
-                            _logger.LogInformation("Retrying step {StepId} (attempt {RetryCount} of {MaxRetries})", 
+                            _logger.LogInformation("Retrying step {StepId} (attempt {RetryCount} of {MaxRetries})",
                                 step.Id, stepExecution.RetryCount, step.RetryCount);
-                            
+
                             // Wait before retrying
                             await Task.Delay(step.RetryInterval);
-                            
+
                             // Reset status to not started
                             stepStatuses[step.Id] = WorkflowStepExecutionStatus.NotStarted;
                             stepExecution.Status = WorkflowStepExecutionStatus.NotStarted;
@@ -381,32 +489,32 @@ namespace GenericDataPlatform.ETL.Workflows
                             stepExecution.Status = WorkflowStepExecutionStatus.Failed;
                             stepExecution.EndTime = DateTime.UtcNow;
                             _logger.LogError("Step {StepId} failed after {RetryCount} retries", step.Id, step.RetryCount);
-                            
+
                             if (context.Workflow.ErrorHandling.DefaultAction == WorkflowErrorAction.StopWorkflow)
                             {
                                 throw new WorkflowStepFailedException($"Step {step.Id} failed after {step.RetryCount} retries", ex);
                             }
                         }
                         break;
-                    
+
                     case WorkflowErrorAction.SkipStep:
                         stepStatuses[step.Id] = WorkflowStepExecutionStatus.Skipped;
                         stepExecution.Status = WorkflowStepExecutionStatus.Skipped;
                         stepExecution.EndTime = DateTime.UtcNow;
                         _logger.LogWarning("Step {StepId} failed and will be skipped", step.Id);
                         break;
-                    
+
                     case WorkflowErrorAction.ExecuteFallback:
                         if (!string.IsNullOrEmpty(step.ErrorHandling.FallbackStepId))
                         {
-                            _logger.LogInformation("Step {StepId} failed, executing fallback step {FallbackStepId}", 
+                            _logger.LogInformation("Step {StepId} failed, executing fallback step {FallbackStepId}",
                                 step.Id, step.ErrorHandling.FallbackStepId);
-                            
+
                             // Mark current step as failed
                             stepStatuses[step.Id] = WorkflowStepExecutionStatus.Failed;
                             stepExecution.Status = WorkflowStepExecutionStatus.Failed;
                             stepExecution.EndTime = DateTime.UtcNow;
-                            
+
                             // Find fallback step
                             var fallbackStep = context.Workflow.Steps.FirstOrDefault(s => s.Id == step.ErrorHandling.FallbackStepId);
                             if (fallbackStep != null)
@@ -441,9 +549,9 @@ namespace GenericDataPlatform.ETL.Workflows
             {
                 return true;
             }
-            
-            return step.DependsOn.All(dependencyId => 
-                stepStatuses.TryGetValue(dependencyId, out var status) && 
+
+            return step.DependsOn.All(dependencyId =>
+                stepStatuses.TryGetValue(dependencyId, out var status) &&
                 (status == WorkflowStepExecutionStatus.Completed || status == WorkflowStepExecutionStatus.Skipped));
         }
 
@@ -453,7 +561,7 @@ namespace GenericDataPlatform.ETL.Workflows
             {
                 return true;
             }
-            
+
             foreach (var condition in conditions)
             {
                 if (!await EvaluateConditionAsync(condition, context))
@@ -461,7 +569,7 @@ namespace GenericDataPlatform.ETL.Workflows
                     return false;
                 }
             }
-            
+
             return true;
         }
 
@@ -471,13 +579,13 @@ namespace GenericDataPlatform.ETL.Workflows
             {
                 case WorkflowConditionType.Expression:
                     return EvaluateExpression(condition.Expression, context);
-                
+
                 case WorkflowConditionType.Script:
                 case WorkflowConditionType.DataBased:
                 case WorkflowConditionType.External:
                     _logger.LogWarning("Condition type {ConditionType} is not implemented", condition.Type);
                     return true;
-                
+
                 default:
                     return true;
             }
@@ -487,12 +595,12 @@ namespace GenericDataPlatform.ETL.Workflows
         {
             // In a real implementation, this would evaluate the expression
             // For this example, we'll implement a simple expression evaluator
-            
+
             if (string.IsNullOrEmpty(expression))
             {
                 return true;
             }
-            
+
             // Check for variable references
             if (expression.Contains("$"))
             {
@@ -501,20 +609,20 @@ namespace GenericDataPlatform.ETL.Workflows
                 {
                     expression = expression.Replace($"${variable.Key}", variable.Value?.ToString() ?? "null");
                 }
-                
+
                 // Replace parameter references
                 foreach (var parameter in context.Parameters)
                 {
                     expression = expression.Replace($"$params.{parameter.Key}", parameter.Value?.ToString() ?? "null");
                 }
-                
+
                 // Replace step output references
                 foreach (var output in context.StepOutputs)
                 {
                     expression = expression.Replace($"$steps.{output.Key}", "true");
                 }
             }
-            
+
             // Simple equality check
             if (expression.Contains("=="))
             {
@@ -523,11 +631,11 @@ namespace GenericDataPlatform.ETL.Workflows
                 {
                     var left = parts[0].Trim();
                     var right = parts[1].Trim();
-                    
+
                     return left == right;
                 }
             }
-            
+
             // Simple inequality check
             if (expression.Contains("!="))
             {
@@ -536,17 +644,17 @@ namespace GenericDataPlatform.ETL.Workflows
                 {
                     var left = parts[0].Trim();
                     var right = parts[1].Trim();
-                    
+
                     return left != right;
                 }
             }
-            
+
             // Simple boolean check
             if (bool.TryParse(expression, out var boolResult))
             {
                 return boolResult;
             }
-            
+
             // Default to true for unrecognized expressions
             _logger.LogWarning("Could not evaluate expression: {Expression}", expression);
             return true;
@@ -558,7 +666,7 @@ namespace GenericDataPlatform.ETL.Workflows
         public WorkflowStepFailedException(string message) : base(message)
         {
         }
-        
+
         public WorkflowStepFailedException(string message, Exception innerException) : base(message, innerException)
         {
         }
