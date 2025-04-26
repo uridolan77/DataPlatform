@@ -10,6 +10,15 @@
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />
     <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Elsa" Version="2.13.0" />
+    <PackageReference Include="Elsa.Activities.Console" Version="2.13.0" />
+    <PackageReference Include="Elsa.Activities.Http" Version="2.13.0" />
+    <PackageReference Include="Elsa.Activities.Temporal.Quartz" Version="2.13.0" />
+    <PackageReference Include="Elsa.Core" Version="2.13.0" />
+    <PackageReference Include="Elsa.Dashboard" Version="2.13.0" />
+    <PackageReference Include="Elsa.Designer.Components.Web" Version="2.13.0" />
+    <PackageReference Include="Elsa.Persistence.EntityFramework.SqlServer" Version="2.13.0" />
+    <PackageReference Include="Elsa.Server.Api" Version="2.13.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />

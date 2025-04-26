@@ -129,6 +129,42 @@
               "target": "Package",
               "version": "[2.1.66, )"
             },
+            "Elsa": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Activities.Console": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Activities.Http": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Activities.Temporal.Quartz": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Core": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Dashboard": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Designer.Components.Web": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Persistence.EntityFramework.SqlServer": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
+            "Elsa.Server.Api": {
+              "target": "Package",
+              "version": "[2.13.0, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[9.0.4, )"

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.ETL")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a3846db04abaf4aacc97408ba2d2f27ae0412603")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+46fe1c44c8954e02ec72c272c66fe6a794f4760b")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.ETL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.ETL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

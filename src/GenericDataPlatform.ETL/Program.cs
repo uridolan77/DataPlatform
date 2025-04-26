@@ -1,24 +1,28 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using Elsa;
+using Elsa.Activities.Http.Extensions;
+using Elsa.Dashboard.Extensions;
+using Elsa.Persistence.EntityFramework.Core.Extensions;
+using Elsa.Persistence.EntityFramework.SqlServer;
+using Elsa.Server.Api.Extensions;
 using GenericDataPlatform.Common.Configuration;
 using GenericDataPlatform.Common.Resilience;
+using GenericDataPlatform.ETL.ElsaWorkflows.Activities;
+using GenericDataPlatform.ETL.ElsaWorkflows.Services;
 using GenericDataPlatform.ETL.Enrichers;
 using GenericDataPlatform.ETL.Extractors.Base;
 using GenericDataPlatform.ETL.Extractors.Rest;
 using GenericDataPlatform.ETL.Loaders.Base;
 using GenericDataPlatform.ETL.Loaders.Database;
 using GenericDataPlatform.ETL.Middleware;
-using GenericDataPlatform.ETL.Processors;
 using GenericDataPlatform.ETL.Transformers.Base;
 using GenericDataPlatform.ETL.Transformers.Csv;
 using GenericDataPlatform.ETL.Transformers.Json;
 using GenericDataPlatform.ETL.Transformers.Xml;
 using GenericDataPlatform.ETL.Validators;
-using GenericDataPlatform.ETL.Workflows;
-using GenericDataPlatform.ETL.Workflows.Interfaces;
-using GenericDataPlatform.ETL.Workflows.Repositories;
-using GenericDataPlatform.ETL.Workflows.StepProcessors;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
@@ -86,35 +90,36 @@ builder.Services.AddScoped<IEnricher, LookupEnricher>();
 // Loaders
 builder.Services.AddScoped<ILoader, DatabaseLoader>();
 
-// Pipeline processor
-builder.Services.AddScoped<IPipelineProcessor>(sp => new PipelineProcessor(
-    sp,
-    sp.GetServices<IExtractor>(),
-    sp.GetServices<ITransformer>(),
-    sp.GetServices<ILoader>(),
-    sp.GetServices<IValidator>(),
-    sp.GetServices<IEnricher>(),
-    sp.GetRequiredService<ILogger<PipelineProcessor>>()
-));
+// Configure Elsa Workflows
+// Add Elsa services
+builder.Services
+    .AddElsa(options => options
+        .UseEntityFrameworkPersistence(ef => ef.UseSqlServer(
+            builder.Configuration.GetConnectionString("ElsaDb"),
+            sqlOptions => sqlOptions.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)))
+        .AddConsoleActivities()
+        .AddHttpActivities()
+        .AddQuartzTemporalActivities()
+        .AddWorkflowsFrom<Program>()
+    );
 
-// Register workflow options
-builder.Services.Configure<WorkflowOptions>(builder.Configuration.GetSection("WorkflowOptions"));
+// Add custom ETL activities
+builder.Services.AddActivity<ExtractActivity>()
+    .AddActivity<TransformActivity>()
+    .AddActivity<LoadActivity>()
+    .AddActivity<ValidateActivity>()
+    .AddActivity<EnrichActivity>()
+    .AddActivity<BranchActivity>();
 
-// Register workflow repositories
-builder.Services.AddSingleton<IWorkflowRepository, DatabaseWorkflowRepository>();
+// Add Elsa API endpoints
+builder.Services.AddElsaApiEndpoints();
 
-// Register workflow monitoring
-builder.Services.AddSingleton<IWorkflowMonitor, Workflows.Monitoring.WorkflowMonitor>();
+// Add Elsa Dashboard
+builder.Services.AddElsaDashboard();
 
-// Workflow engine components
-builder.Services.AddScoped<IWorkflowEngine, WorkflowEngine>();
-builder.Services.AddScoped<IWorkflowStepProcessor, ExtractStepProcessor>();
-builder.Services.AddScoped<IWorkflowStepProcessor, TransformStepProcessor>();
-builder.Services.AddScoped<IWorkflowStepProcessor, ValidateStepProcessor>();
-builder.Services.AddScoped<IWorkflowStepProcessor, EnrichStepProcessor>();
-builder.Services.AddScoped<IWorkflowStepProcessor, LoadStepProcessor>();
-builder.Services.AddScoped<IWorkflowStepProcessor, BranchStepProcessor>();
-builder.Services.AddScoped<IWorkflowStepProcessor, CustomStepProcessor>();
+// Add ETL workflow services
+builder.Services.AddScoped<IEtlWorkflowService, EtlWorkflowService>();
+builder.Services.AddScoped<IWorkflowDefinitionBuilder, WorkflowDefinitionBuilder>();
 
 var app = builder.Build();
 
@@ -132,6 +137,17 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+// Map Elsa API endpoints
+app.UseHttpActivities();
+app.UseRouting();
+app.UseEndpoints(endpoints =>
+{
+    // Elsa API Endpoints
+    endpoints.MapControllers();
+    endpoints.MapElsaApiEndpoints();
+
+    // Elsa Dashboard
+    endpoints.MapFallbackToPage("/_Host");
+});
 
 app.Run();

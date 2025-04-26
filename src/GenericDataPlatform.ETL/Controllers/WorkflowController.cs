@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using GenericDataPlatform.ETL.Workflows.Interfaces;
+using GenericDataPlatform.ETL.ElsaWorkflows.Services;
 using GenericDataPlatform.ETL.Workflows.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,99 +12,116 @@ namespace GenericDataPlatform.ETL.Controllers
     [Route("api/workflows")]
     public class WorkflowController : ControllerBase
     {
-        private readonly IWorkflowEngine _workflowEngine;
+        private readonly IEtlWorkflowService _workflowService;
         private readonly ILogger<WorkflowController> _logger;
-        
-        // In a real implementation, this would be stored in a database
-        private static readonly Dictionary<string, WorkflowDefinition> _workflows = new Dictionary<string, WorkflowDefinition>();
-        
-        public WorkflowController(IWorkflowEngine workflowEngine, ILogger<WorkflowController> logger)
+
+        public WorkflowController(IEtlWorkflowService workflowService, ILogger<WorkflowController> logger)
         {
-            _workflowEngine = workflowEngine;
+            _workflowService = workflowService;
             _logger = logger;
         }
-        
+
         [HttpGet]
-        public ActionResult<IEnumerable<WorkflowDefinition>> GetWorkflows()
+        public async Task<IActionResult> GetWorkflows([FromQuery] int skip = 0, [FromQuery] int take = 100)
         {
-            return Ok(_workflows.Values);
-        }
-        
-        [HttpGet("{id}")]
-        public ActionResult<WorkflowDefinition> GetWorkflow(string id)
-        {
-            if (!_workflows.TryGetValue(id, out var workflow))
-            {
-                return NotFound();
-            }
-            
-            return Ok(workflow);
-        }
-        
-        [HttpPost]
-        public ActionResult<WorkflowDefinition> CreateWorkflow(WorkflowDefinition workflow)
-        {
-            if (string.IsNullOrEmpty(workflow.Id))
-            {
-                workflow.Id = Guid.NewGuid().ToString();
-            }
-            
-            if (_workflows.ContainsKey(workflow.Id))
-            {
-                return Conflict($"Workflow with ID {workflow.Id} already exists");
-            }
-            
-            workflow.CreatedAt = DateTime.UtcNow;
-            workflow.UpdatedAt = DateTime.UtcNow;
-            
-            _workflows[workflow.Id] = workflow;
-            
-            return CreatedAtAction(nameof(GetWorkflow), new { id = workflow.Id }, workflow);
-        }
-        
-        [HttpPut("{id}")]
-        public ActionResult<WorkflowDefinition> UpdateWorkflow(string id, WorkflowDefinition workflow)
-        {
-            if (!_workflows.ContainsKey(id))
-            {
-                return NotFound();
-            }
-            
-            workflow.Id = id;
-            workflow.CreatedAt = _workflows[id].CreatedAt;
-            workflow.UpdatedAt = DateTime.UtcNow;
-            
-            _workflows[id] = workflow;
-            
-            return Ok(workflow);
-        }
-        
-        [HttpDelete("{id}")]
-        public ActionResult DeleteWorkflow(string id)
-        {
-            if (!_workflows.ContainsKey(id))
-            {
-                return NotFound();
-            }
-            
-            _workflows.Remove(id);
-            
-            return NoContent();
-        }
-        
-        [HttpPost("{id}/execute")]
-        public async Task<ActionResult<WorkflowExecution>> ExecuteWorkflow(string id, [FromBody] Dictionary<string, object> parameters = null)
-        {
-            if (!_workflows.TryGetValue(id, out var workflow))
-            {
-                return NotFound();
-            }
-            
             try
             {
-                var execution = await _workflowEngine.ExecuteWorkflowAsync(workflow, parameters);
-                
-                return Ok(execution);
+                var workflows = await _workflowService.GetWorkflowDefinitionsAsync(skip, take);
+                return Ok(workflows);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting workflows");
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetWorkflow(string id, [FromQuery] string version = null)
+        {
+            try
+            {
+                var workflow = await _workflowService.GetWorkflowDefinitionAsync(id, version);
+                if (workflow == null)
+                {
+                    return NotFound();
+                }
+                return Ok(workflow);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting workflow {WorkflowId}", id);
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateWorkflow([FromBody] WorkflowDefinition workflow)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(workflow.Id))
+                {
+                    workflow.Id = Guid.NewGuid().ToString();
+                }
+
+                workflow.CreatedAt = DateTime.UtcNow;
+                workflow.UpdatedAt = DateTime.UtcNow;
+
+                var workflowId = await _workflowService.CreateWorkflowDefinitionAsync(workflow);
+                return CreatedAtAction(nameof(GetWorkflow), new { id = workflowId }, workflow);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating workflow");
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateWorkflow(string id, [FromBody] WorkflowDefinition workflow)
+        {
+            try
+            {
+                if (id != workflow.Id)
+                {
+                    workflow.Id = id;
+                }
+
+                workflow.UpdatedAt = DateTime.UtcNow;
+
+                var workflowId = await _workflowService.UpdateWorkflowDefinitionAsync(workflow);
+                return Ok(new { Id = workflowId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating workflow {WorkflowId}", id);
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteWorkflow(string id)
+        {
+            try
+            {
+                var result = await _workflowService.DeleteWorkflowDefinitionAsync(id);
+                return Ok(new { Success = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting workflow {WorkflowId}", id);
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpPost("{id}/execute")]
+        public async Task<IActionResult> ExecuteWorkflow(string id, [FromBody] Dictionary<string, object> input = null)
+        {
+            try
+            {
+                var result = await _workflowService.ExecuteWorkflowAsync(id, input);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -112,67 +129,52 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
-        
+
         [HttpGet("executions/{executionId}")]
-        public async Task<ActionResult<WorkflowExecution>> GetExecutionStatus(string executionId)
+        public async Task<IActionResult> GetWorkflowExecution(string executionId)
         {
             try
             {
-                var execution = await _workflowEngine.GetExecutionStatusAsync(executionId);
-                
-                return Ok(execution);
-            }
-            catch (KeyNotFoundException)
-            {
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting execution status {ExecutionId}", executionId);
-                return StatusCode(500, new { Error = ex.Message });
-            }
-        }
-        
-        [HttpPost("executions/{executionId}/cancel")]
-        public async Task<ActionResult> CancelExecution(string executionId)
-        {
-            try
-            {
-                var result = await _workflowEngine.CancelExecutionAsync(executionId);
-                
-                if (result)
-                {
-                    return Ok(new { Message = "Execution cancelled successfully" });
-                }
-                else
+                var execution = await _workflowService.GetWorkflowExecutionAsync(executionId);
+                if (execution == null)
                 {
                     return NotFound();
                 }
+                return Ok(execution);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error cancelling execution {ExecutionId}", executionId);
+                _logger.LogError(ex, "Error getting workflow execution {ExecutionId}", executionId);
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
-        
+
         [HttpGet("{id}/history")]
-        public async Task<ActionResult<List<WorkflowExecution>>> GetExecutionHistory(string id, [FromQuery] int limit = 10)
+        public async Task<IActionResult> GetWorkflowExecutionHistory(string id, [FromQuery] int skip = 0, [FromQuery] int take = 10)
         {
-            if (!_workflows.ContainsKey(id))
-            {
-                return NotFound();
-            }
-            
             try
             {
-                var history = await _workflowEngine.GetExecutionHistoryAsync(id, limit);
-                
-                return Ok(history);
+                var executions = await _workflowService.GetWorkflowExecutionHistoryAsync(id, skip, take);
+                return Ok(executions);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting execution history for workflow {WorkflowId}", id);
+                _logger.LogError(ex, "Error getting workflow execution history {WorkflowId}", id);
+                return StatusCode(500, new { Error = ex.Message });
+            }
+        }
+
+        [HttpPost("executions/{executionId}/cancel")]
+        public async Task<IActionResult> CancelWorkflowExecution(string executionId)
+        {
+            try
+            {
+                var result = await _workflowService.CancelWorkflowExecutionAsync(executionId);
+                return Ok(new { Success = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling workflow execution {ExecutionId}", executionId);
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
