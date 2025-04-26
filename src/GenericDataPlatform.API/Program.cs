@@ -13,6 +13,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Add HTTP client factory
+builder.Services.AddHttpClient();
+
 // Configure JWT authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettings);
