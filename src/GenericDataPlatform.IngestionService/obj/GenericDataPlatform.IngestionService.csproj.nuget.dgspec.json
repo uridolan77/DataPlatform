@@ -34,7 +34,11 @@
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {
+                "projectPath": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -58,6 +62,36 @@
               "version": "[3.7.302.29, )",
               "versionCentrallyManaged": true
             },
+            "AspNetCore.HealthChecks.Kafka": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "AspNetCore.HealthChecks.NpgSql": {
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "AspNetCore.HealthChecks.RabbitMQ": {
+              "target": "Package",
+              "version": "[9.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "AspNetCore.HealthChecks.Redis": {
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "AspNetCore.HealthChecks.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
+            "AspNetCore.HealthChecks.Uris": {
+              "target": "Package",
+              "version": "[8.0.0, )",
+              "versionCentrallyManaged": true
+            },
             "Azure.Identity": {
               "target": "Package",
               "version": "[1.10.4, )",
@@ -75,7 +109,8 @@
             },
             "Grpc.AspNetCore": {
               "target": "Package",
-              "version": "(, )"
+              "version": "[2.59.0, )",
+              "versionCentrallyManaged": true
             },
             "Grpc.Net.Client": {
               "target": "Package",
@@ -94,29 +129,25 @@
               "version": "[2.59.0, )",
               "versionCentrallyManaged": true
             },
-            "Microsoft.AspNetCore.Builder": {
-              "target": "Package",
-              "version": "(, )"
-            },
             "Microsoft.AspNetCore.Diagnostics.HealthChecks": {
               "target": "Package",
-              "version": "(, )"
+              "version": "[2.2.0, )",
+              "versionCentrallyManaged": true
             },
             "Microsoft.AspNetCore.Hosting": {
               "target": "Package",
-              "version": "(, )"
+              "version": "[2.2.7, )",
+              "versionCentrallyManaged": true
             },
             "Microsoft.AspNetCore.Hosting.Abstractions": {
               "target": "Package",
-              "version": "(, )"
+              "version": "[2.2.0, )",
+              "versionCentrallyManaged": true
             },
             "Microsoft.AspNetCore.Http.Abstractions": {
               "target": "Package",
-              "version": "(, )"
-            },
-            "Microsoft.AspNetCore.Server.Kestrel": {
-              "target": "Package",
-              "version": "(, )"
+              "version": "[2.2.0, )",
+              "versionCentrallyManaged": true
             },
             "Microsoft.CodeAnalysis.NetAnalyzers": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
@@ -217,17 +248,57 @@
             },
             "OpenTelemetry": {
               "target": "Package",
-              "version": "[1.7.0, )",
+              "version": "[1.11.2, )",
               "versionCentrallyManaged": true
             },
             "OpenTelemetry.Api": {
               "target": "Package",
-              "version": "[1.7.0, )",
+              "version": "[1.11.2, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Console": {
+              "target": "Package",
+              "version": "[1.11.2, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Jaeger": {
+              "target": "Package",
+              "version": "[1.5.1, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
+              "target": "Package",
+              "version": "[1.11.2, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": {
+              "target": "Package",
+              "version": "[1.11.2-beta.1, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Exporter.Zipkin": {
+              "target": "Package",
+              "version": "[1.11.2, )",
               "versionCentrallyManaged": true
             },
             "OpenTelemetry.Extensions.Hosting": {
               "target": "Package",
+              "version": "[1.11.2, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Instrumentation.AspNetCore": {
+              "target": "Package",
               "version": "[1.7.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Instrumentation.Http": {
+              "target": "Package",
+              "version": "[1.7.0, )",
+              "versionCentrallyManaged": true
+            },
+            "OpenTelemetry.Instrumentation.SqlClient": {
+              "target": "Package",
+              "version": "[1.6.0-beta.3, )",
               "versionCentrallyManaged": true
             },
             "Polly": {
@@ -253,6 +324,11 @@
             "Serilog.AspNetCore": {
               "target": "Package",
               "version": "[8.0.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Serilog.Enrichers.Environment": {
+              "target": "Package",
+              "version": "[2.3.0, )",
               "versionCentrallyManaged": true
             },
             "Serilog.Extensions.Logging": {
@@ -287,6 +363,11 @@
               "version": "[4.8.6, )",
               "versionCentrallyManaged": true
             },
+            "System.Security.Cryptography.X509Certificates": {
+              "target": "Package",
+              "version": "[4.3.2, )",
+              "versionCentrallyManaged": true
+            },
             "VaultSharp": {
               "target": "Package",
               "version": "[1.13.0.1, )",
@@ -294,8 +375,9 @@
             }
           },
           "centralPackageVersions": {
+            "AspNetCore.HealthChecks.Kafka": "9.0.0",
             "AspNetCore.HealthChecks.NpgSql": "8.0.0",
-            "AspNetCore.HealthChecks.Rabbitmq": "8.0.0",
+            "AspNetCore.HealthChecks.RabbitMQ": "9.0.0",
             "AspNetCore.HealthChecks.Redis": "8.0.0",
             "AspNetCore.HealthChecks.SqlServer": "8.0.0",
             "AspNetCore.HealthChecks.Uris": "8.0.0",
@@ -317,11 +399,17 @@
             "Elsa.Server.Api": "1.5.5.1943",
             "FluentAssertions": "6.12.0",
             "Google.Protobuf": "3.25.1",
+            "Grpc.AspNetCore": "2.59.0",
             "Grpc.Net.Client": "2.59.0",
             "Grpc.Net.ClientFactory": "2.59.0",
             "Grpc.Tools": "2.59.0",
             "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
+            "Microsoft.AspNetCore.Diagnostics.HealthChecks": "2.2.0",
+            "Microsoft.AspNetCore.Hosting": "2.2.7",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "2.2.0",
+            "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
             "Microsoft.AspNetCore.OpenApi": "9.0.0",
+            "Microsoft.AspNetCore.Server.Kestrel": "2.2.0",
             "Microsoft.CodeAnalysis.NetAnalyzers": "9.0.0",
             "Microsoft.Data.SqlClient": "5.1.3",
             "Microsoft.Extensions.Configuration": "9.0.0",
@@ -345,11 +433,14 @@
             "MySql.Data": "8.3.0",
             "Newtonsoft.Json": "13.0.3",
             "Npgsql": "8.0.1",
-            "OpenTelemetry": "1.7.0",
-            "OpenTelemetry.Api": "1.7.0",
-            "OpenTelemetry.Exporter.Console": "1.7.0",
-            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.7.0",
-            "OpenTelemetry.Extensions.Hosting": "1.7.0",
+            "OpenTelemetry": "1.11.2",
+            "OpenTelemetry.Api": "1.11.2",
+            "OpenTelemetry.Exporter.Console": "1.11.2",
+            "OpenTelemetry.Exporter.Jaeger": "1.5.1",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.11.2",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.11.2-beta.1",
+            "OpenTelemetry.Exporter.Zipkin": "1.11.2",
+            "OpenTelemetry.Extensions.Hosting": "1.11.2",
             "OpenTelemetry.Instrumentation.AspNetCore": "1.7.0",
             "OpenTelemetry.Instrumentation.EntityFrameworkCore": "1.0.0-beta.8",
             "OpenTelemetry.Instrumentation.Http": "1.7.0",
@@ -372,6 +463,7 @@
             "Swashbuckle.AspNetCore": "6.5.0",
             "System.Data.SqlClient": "4.8.6",
             "System.Linq.Async": "6.0.1",
+            "System.Security.Cryptography.X509Certificates": "4.3.2",
             "VaultSharp": "1.13.0.1",
             "xunit": "2.6.3",
             "xunit.runner.visualstudio": "2.5.5"
@@ -511,8 +603,9 @@
             }
           },
           "centralPackageVersions": {
+            "AspNetCore.HealthChecks.Kafka": "9.0.0",
             "AspNetCore.HealthChecks.NpgSql": "8.0.0",
-            "AspNetCore.HealthChecks.Rabbitmq": "8.0.0",
+            "AspNetCore.HealthChecks.RabbitMQ": "9.0.0",
             "AspNetCore.HealthChecks.Redis": "8.0.0",
             "AspNetCore.HealthChecks.SqlServer": "8.0.0",
             "AspNetCore.HealthChecks.Uris": "8.0.0",
@@ -534,11 +627,17 @@
             "Elsa.Server.Api": "1.5.5.1943",
             "FluentAssertions": "6.12.0",
             "Google.Protobuf": "3.25.1",
+            "Grpc.AspNetCore": "2.59.0",
             "Grpc.Net.Client": "2.59.0",
             "Grpc.Net.ClientFactory": "2.59.0",
             "Grpc.Tools": "2.59.0",
             "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
+            "Microsoft.AspNetCore.Diagnostics.HealthChecks": "2.2.0",
+            "Microsoft.AspNetCore.Hosting": "2.2.7",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "2.2.0",
+            "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
             "Microsoft.AspNetCore.OpenApi": "9.0.0",
+            "Microsoft.AspNetCore.Server.Kestrel": "2.2.0",
             "Microsoft.CodeAnalysis.NetAnalyzers": "9.0.0",
             "Microsoft.Data.SqlClient": "5.1.3",
             "Microsoft.Extensions.Configuration": "9.0.0",
@@ -562,11 +661,14 @@
             "MySql.Data": "8.3.0",
             "Newtonsoft.Json": "13.0.3",
             "Npgsql": "8.0.1",
-            "OpenTelemetry": "1.7.0",
-            "OpenTelemetry.Api": "1.7.0",
-            "OpenTelemetry.Exporter.Console": "1.7.0",
-            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.7.0",
-            "OpenTelemetry.Extensions.Hosting": "1.7.0",
+            "OpenTelemetry": "1.11.2",
+            "OpenTelemetry.Api": "1.11.2",
+            "OpenTelemetry.Exporter.Console": "1.11.2",
+            "OpenTelemetry.Exporter.Jaeger": "1.5.1",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.11.2",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.11.2-beta.1",
+            "OpenTelemetry.Exporter.Zipkin": "1.11.2",
+            "OpenTelemetry.Extensions.Hosting": "1.11.2",
             "OpenTelemetry.Instrumentation.AspNetCore": "1.7.0",
             "OpenTelemetry.Instrumentation.EntityFrameworkCore": "1.0.0-beta.8",
             "OpenTelemetry.Instrumentation.Http": "1.7.0",
@@ -589,6 +691,7 @@
             "Swashbuckle.AspNetCore": "6.5.0",
             "System.Data.SqlClient": "4.8.6",
             "System.Linq.Async": "6.0.1",
+            "System.Security.Cryptography.X509Certificates": "4.3.2",
             "VaultSharp": "1.13.0.1",
             "xunit": "2.6.3",
             "xunit.runner.visualstudio": "2.5.5"
@@ -608,6 +711,187 @@
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
             },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
+        "projectName": "Protos",
+        "projectPath": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
+        "packagesPath": "C:\\Users\\urido\\.nuget\\packages\\",
+        "outputPath": "C:\\dev\\DataPlatform\\src\\Protos\\obj\\",
+        "projectStyle": "PackageReference",
+        "centralPackageVersionsManagementEnabled": true,
+        "CentralPackageTransitivePinningEnabled": true,
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\urido\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Google.Protobuf": {
+              "target": "Package",
+              "version": "[3.25.1, )",
+              "versionCentrallyManaged": true
+            },
+            "Grpc.Net.Client": {
+              "target": "Package",
+              "version": "[2.59.0, )",
+              "versionCentrallyManaged": true
+            },
+            "Grpc.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.59.0, )",
+              "versionCentrallyManaged": true
+            }
+          },
+          "centralPackageVersions": {
+            "AspNetCore.HealthChecks.Kafka": "9.0.0",
+            "AspNetCore.HealthChecks.NpgSql": "8.0.0",
+            "AspNetCore.HealthChecks.RabbitMQ": "9.0.0",
+            "AspNetCore.HealthChecks.Redis": "8.0.0",
+            "AspNetCore.HealthChecks.SqlServer": "8.0.0",
+            "AspNetCore.HealthChecks.Uris": "8.0.0",
+            "AWSSDK.SecretsManager": "3.7.302.29",
+            "Azure.Identity": "1.10.4",
+            "Azure.Security.KeyVault.Secrets": "4.5.0",
+            "BCrypt.Net-Next": "4.0.3",
+            "coverlet.collector": "6.0.0",
+            "CsvHelper": "30.0.1",
+            "Dapper": "2.1.28",
+            "Elsa": "1.5.5.1943",
+            "Elsa.Activities.Console": "1.5.5.1943",
+            "Elsa.Activities.Http": "1.5.5.1943",
+            "Elsa.Activities.Temporal.Quartz": "1.5.5.1943",
+            "Elsa.Core": "1.5.5.1943",
+            "Elsa.Dashboard": "1.5.5.1943",
+            "Elsa.Designer.Components.Web": "1.5.5.1943",
+            "Elsa.Persistence.EntityFramework.SqlServer": "1.5.5.1943",
+            "Elsa.Server.Api": "1.5.5.1943",
+            "FluentAssertions": "6.12.0",
+            "Google.Protobuf": "3.25.1",
+            "Grpc.AspNetCore": "2.59.0",
+            "Grpc.Net.Client": "2.59.0",
+            "Grpc.Net.ClientFactory": "2.59.0",
+            "Grpc.Tools": "2.59.0",
+            "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.0",
+            "Microsoft.AspNetCore.Diagnostics.HealthChecks": "2.2.0",
+            "Microsoft.AspNetCore.Hosting": "2.2.7",
+            "Microsoft.AspNetCore.Hosting.Abstractions": "2.2.0",
+            "Microsoft.AspNetCore.Http.Abstractions": "2.2.0",
+            "Microsoft.AspNetCore.OpenApi": "9.0.0",
+            "Microsoft.AspNetCore.Server.Kestrel": "2.2.0",
+            "Microsoft.CodeAnalysis.NetAnalyzers": "9.0.0",
+            "Microsoft.Data.SqlClient": "5.1.3",
+            "Microsoft.Extensions.Configuration": "9.0.0",
+            "Microsoft.Extensions.Configuration.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Configuration.Binder": "9.0.0",
+            "Microsoft.Extensions.Configuration.Json": "9.0.0",
+            "Microsoft.Extensions.Configuration.UserSecrets": "9.0.0",
+            "Microsoft.Extensions.DependencyInjection": "9.0.0",
+            "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Diagnostics.HealthChecks": "9.0.0",
+            "Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Http": "9.0.0",
+            "Microsoft.Extensions.Http.Polly": "9.0.0",
+            "Microsoft.Extensions.Logging": "9.0.0",
+            "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
+            "Microsoft.Extensions.Options": "9.0.0",
+            "Microsoft.Extensions.Options.ConfigurationExtensions": "9.0.0",
+            "Microsoft.ML": "3.0.0",
+            "Microsoft.NET.Test.Sdk": "17.9.0",
+            "Moq": "4.20.70",
+            "MySql.Data": "8.3.0",
+            "Newtonsoft.Json": "13.0.3",
+            "Npgsql": "8.0.1",
+            "OpenTelemetry": "1.11.2",
+            "OpenTelemetry.Api": "1.11.2",
+            "OpenTelemetry.Exporter.Console": "1.11.2",
+            "OpenTelemetry.Exporter.Jaeger": "1.5.1",
+            "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.11.2",
+            "OpenTelemetry.Exporter.Prometheus.AspNetCore": "1.11.2-beta.1",
+            "OpenTelemetry.Exporter.Zipkin": "1.11.2",
+            "OpenTelemetry.Extensions.Hosting": "1.11.2",
+            "OpenTelemetry.Instrumentation.AspNetCore": "1.7.0",
+            "OpenTelemetry.Instrumentation.EntityFrameworkCore": "1.0.0-beta.8",
+            "OpenTelemetry.Instrumentation.Http": "1.7.0",
+            "OpenTelemetry.Instrumentation.Process": "0.5.0-beta.3",
+            "OpenTelemetry.Instrumentation.Runtime": "1.7.0",
+            "OpenTelemetry.Instrumentation.SqlClient": "1.6.0-beta.3",
+            "Polly": "8.2.0",
+            "Polly.Contrib.WaitAndRetry": "1.1.1",
+            "Polly.Extensions.Http": "3.0.0",
+            "Serilog": "3.1.1",
+            "Serilog.AspNetCore": "8.0.1",
+            "Serilog.Enrichers.Environment": "2.3.0",
+            "Serilog.Enrichers.Process": "2.0.2",
+            "Serilog.Enrichers.Thread": "3.1.0",
+            "Serilog.Extensions.Logging": "8.0.0",
+            "Serilog.Settings.Configuration": "8.0.0",
+            "Serilog.Sinks.Console": "5.0.1",
+            "Serilog.Sinks.File": "5.0.0",
+            "StyleCop.Analyzers": "1.1.118",
+            "Swashbuckle.AspNetCore": "6.5.0",
+            "System.Data.SqlClient": "4.8.6",
+            "System.Linq.Async": "6.0.1",
+            "System.Security.Cryptography.X509Certificates": "4.3.2",
+            "VaultSharp": "1.13.0.1",
+            "xunit": "2.6.3",
+            "xunit.runner.visualstudio": "2.5.5"
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }

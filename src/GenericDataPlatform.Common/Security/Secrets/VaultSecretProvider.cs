@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -46,7 +47,7 @@ namespace GenericDataPlatform.Common.Security.Secrets
                 
                 // Get the secret from Vault
                 var secret = await _vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
-                    path, 
+                    path,
                     mountPoint: _options.SecretsEnginePath);
                 
                 if (secret?.Data?.Data != null && secret.Data.Data.TryGetValue(field, out var value) && value != null)
@@ -84,10 +85,13 @@ namespace GenericDataPlatform.Common.Security.Secrets
                 try
                 {
                     var secret = await _vaultClient.V1.Secrets.KeyValue.V2.ReadSecretAsync(
-                        path, 
+                        path,
                         mountPoint: _options.SecretsEnginePath);
                     
-                    data = secret?.Data?.Data ?? new Dictionary<string, object>();
+                    // Fix: Use explicit cast to convert IDictionary to Dictionary
+                    data = secret?.Data?.Data != null ? 
+                           new Dictionary<string, object>(secret.Data.Data) : 
+                           new Dictionary<string, object>();
                 }
                 catch
                 {
@@ -133,7 +137,10 @@ namespace GenericDataPlatform.Common.Security.Secrets
                         path, 
                         mountPoint: _options.SecretsEnginePath);
                     
-                    data = secret?.Data?.Data ?? new Dictionary<string, object>();
+                    // Fix: Use explicit cast to convert IDictionary to Dictionary
+                    data = secret?.Data?.Data != null ? 
+                           new Dictionary<string, object>(secret.Data.Data) : 
+                           new Dictionary<string, object>();
                 }
                 catch
                 {

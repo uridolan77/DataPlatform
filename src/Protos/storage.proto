@@ -17,7 +17,7 @@ service StorageService {
 message StorageMetadata {
   string id = 1;
   string source_id = 2;
-  string content_type = 3;
+  string content_type = 3 [json_name = "content_type"]; // Fixed JSON name conflict
   string filename = 4;
   int64 size = 5;
   string created_at = 6;
@@ -29,7 +29,7 @@ message StorageMetadata {
   string path = 12;
   string created_by = 13;
   string name = 14;
-  string contentType = 15;
+  string content_mime_type = 15; // Renamed from contentType to avoid conflict
 }
 
 message ListFilesRequest {
@@ -54,7 +54,7 @@ message StorageItem {
 
 message UploadFileRequest {
   string name = 1;
-  string contentType = 2;
+  string content_mime_type = 2; // Renamed from contentType for consistency
   bytes content = 3;
   string path = 4;
   oneof request {
@@ -66,8 +66,8 @@ message UploadFileRequest {
 message FileMetadata {
   string source_id = 1;
   string filename = 2;
-  string content_type = 3;
-  int64 total_size = 4;
+  string content_type = 3 [json_name = "content_type"]; // Fixed JSON name conflict
+  int64 total_size = 4 [json_name = "total_size"]; // Fixed JSON name conflict
   map<string, string> custom_metadata = 5;
   bool compress = 6;
   bool encrypt = 7;
@@ -124,12 +124,12 @@ message GetStorageStatisticsRequest {
 }
 
 message StorageStatistics {
-  int64 totalFiles = 1;
-  int64 totalSize = 2;
-  map<string, int64> fileCountByType = 3;
-  map<string, int64> fileSizeByType = 4;
+  int64 file_count = 1; // Renamed from totalFiles for consistency
+  int64 file_storage_size = 2; // Renamed from totalSize for consistency
+  map<string, int64> file_count_by_type = 3; // Renamed for consistency
+  map<string, int64> file_size_by_type = 4; // Renamed for consistency
   int64 total_items = 5;
-  int64 total_size = 6;
+  int64 total_size = 6 [json_name = "total_size"]; // Fixed JSON name conflict
   map<string, int64> items_by_type = 7;
   map<string, int64> size_by_type = 8;
 }

@@ -1,0 +1,2 @@
+obj\Debug\net9.0/Storage.cs \
+obj\Debug\net9.0/StorageGrpc.cs: storage.proto

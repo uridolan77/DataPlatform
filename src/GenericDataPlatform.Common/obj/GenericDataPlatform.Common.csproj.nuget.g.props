@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <RestoreSuccess Condition=" '$(RestoreSuccess)' == '' ">False</RestoreSuccess>
+    <RestoreSuccess Condition=" '$(RestoreSuccess)' == '' ">True</RestoreSuccess>
     <RestoreTool Condition=" '$(RestoreTool)' == '' ">NuGet</RestoreTool>
     <ProjectAssetsFile Condition=" '$(ProjectAssetsFile)' == '' ">$(MSBuildThisFileDirectory)project.assets.json</ProjectAssetsFile>
     <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
@@ -14,13 +14,13 @@
     <SourceRoot Include="C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages\" />
   </ItemGroup>
   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)microsoft.codeanalysis.netanalyzers\9.0.0\buildTransitive\Microsoft.CodeAnalysis.NetAnalyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.codeanalysis.netanalyzers\9.0.0\buildTransitive\Microsoft.CodeAnalysis.NetAnalyzers.props')" />
     <Import Project="$(NuGetPackageRoot)grpc.tools\2.59.0\build\Grpc.Tools.props" Condition="Exists('$(NuGetPackageRoot)grpc.tools\2.59.0\build\Grpc.Tools.props')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.codeanalysis.netanalyzers\9.0.0\buildTransitive\Microsoft.CodeAnalysis.NetAnalyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.codeanalysis.netanalyzers\9.0.0\buildTransitive\Microsoft.CodeAnalysis.NetAnalyzers.props')" />
   </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgStyleCop_Analyzers Condition=" '$(PkgStyleCop_Analyzers)' == '' ">C:\Users\urido\.nuget\packages\stylecop.analyzers\1.1.118</PkgStyleCop_Analyzers>
-    <PkgMicrosoft_CodeAnalysis_NetAnalyzers Condition=" '$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)' == '' ">C:\Users\urido\.nuget\packages\microsoft.codeanalysis.netanalyzers\9.0.0</PkgMicrosoft_CodeAnalysis_NetAnalyzers>
     <PkgGrpc_Tools Condition=" '$(PkgGrpc_Tools)' == '' ">C:\Users\urido\.nuget\packages\grpc.tools\2.59.0</PkgGrpc_Tools>
+    <PkgMicrosoft_CodeAnalysis_NetAnalyzers Condition=" '$(PkgMicrosoft_CodeAnalysis_NetAnalyzers)' == '' ">C:\Users\urido\.nuget\packages\microsoft.codeanalysis.netanalyzers\9.0.0</PkgMicrosoft_CodeAnalysis_NetAnalyzers>
     <PkgAWSSDK_Core Condition=" '$(PkgAWSSDK_Core)' == '' ">C:\Users\urido\.nuget\packages\awssdk.core\3.7.302.15</PkgAWSSDK_Core>
     <PkgAWSSDK_SecretsManager Condition=" '$(PkgAWSSDK_SecretsManager)' == '' ">C:\Users\urido\.nuget\packages\awssdk.secretsmanager\3.7.302.29</PkgAWSSDK_SecretsManager>
   </PropertyGroup>
