@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
@@ -29,7 +30,7 @@ namespace GenericDataPlatform.Common.Resilience
             var call = continuation(request, context);
 
             return new AsyncUnaryCall<TResponse>(
-                HandleResponse(call.ResponseAsync, context.Method),
+                HandleResponse(call.ResponseAsync, context.Method.Name),
                 call.ResponseHeadersAsync,
                 call.GetStatus,
                 call.GetTrailers,
@@ -39,7 +40,7 @@ namespace GenericDataPlatform.Common.Resilience
         /// <summary>
         /// Handles the response and logs any errors
         /// </summary>
-        private async Task<TResponse> HandleResponse<TResponse>(Task<TResponse> responseTask, Method<object, object> method)
+        private async Task<TResponse> HandleResponse<TResponse>(Task<TResponse> responseTask, string methodName)
         {
             try
             {
@@ -48,12 +49,12 @@ namespace GenericDataPlatform.Common.Resilience
             catch (RpcException ex)
             {
                 _logger.LogError(ex, "gRPC call failed. Method: {Method}, Status: {Status}, Detail: {Detail}",
-                    method.FullName, ex.StatusCode, ex.Status.Detail);
+                    methodName, ex.StatusCode, ex.Status.Detail);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error in gRPC call. Method: {Method}", method.FullName);
+                _logger.LogError(ex, "Unexpected error in gRPC call. Method: {Method}", methodName);
                 throw;
             }
         }
@@ -66,13 +67,13 @@ namespace GenericDataPlatform.Common.Resilience
             ClientInterceptorContext<TRequest, TResponse> context,
             AsyncServerStreamingCallContinuation<TRequest, TResponse> continuation)
         {
-            _logger.LogInformation("Starting server streaming call to {Method}", context.Method.FullName);
+            _logger.LogInformation("Starting server streaming call to {Method}", context.Method.Name);
             
             try
             {
                 var call = continuation(request, context);
                 return new AsyncServerStreamingCall<TResponse>(
-                    new ErrorHandlingStreamReader<TResponse>(call.ResponseStream, _logger, context.Method),
+                    new ErrorHandlingStreamReader<TResponse>(call.ResponseStream, _logger, context.Method.Name),
                     call.ResponseHeadersAsync,
                     call.GetStatus,
                     call.GetTrailers,
@@ -80,7 +81,7 @@ namespace GenericDataPlatform.Common.Resilience
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting server streaming call to {Method}", context.Method.FullName);
+                _logger.LogError(ex, "Error starting server streaming call to {Method}", context.Method.Name);
                 throw;
             }
         }
@@ -92,14 +93,14 @@ namespace GenericDataPlatform.Common.Resilience
             ClientInterceptorContext<TRequest, TResponse> context,
             AsyncClientStreamingCallContinuation<TRequest, TResponse> continuation)
         {
-            _logger.LogInformation("Starting client streaming call to {Method}", context.Method.FullName);
+            _logger.LogInformation("Starting client streaming call to {Method}", context.Method.Name);
             
             try
             {
                 var call = continuation(context);
                 return new AsyncClientStreamingCall<TRequest, TResponse>(
                     call.RequestStream,
-                    HandleResponse(call.ResponseAsync, context.Method),
+                    HandleResponse(call.ResponseAsync, context.Method.Name),
                     call.ResponseHeadersAsync,
                     call.GetStatus,
                     call.GetTrailers,
@@ -107,7 +108,7 @@ namespace GenericDataPlatform.Common.Resilience
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting client streaming call to {Method}", context.Method.FullName);
+                _logger.LogError(ex, "Error starting client streaming call to {Method}", context.Method.Name);
                 throw;
             }
         }
@@ -119,14 +120,14 @@ namespace GenericDataPlatform.Common.Resilience
             ClientInterceptorContext<TRequest, TResponse> context,
             AsyncDuplexStreamingCallContinuation<TRequest, TResponse> continuation)
         {
-            _logger.LogInformation("Starting duplex streaming call to {Method}", context.Method.FullName);
+            _logger.LogInformation("Starting duplex streaming call to {Method}", context.Method.Name);
             
             try
             {
                 var call = continuation(context);
                 return new AsyncDuplexStreamingCall<TRequest, TResponse>(
                     call.RequestStream,
-                    new ErrorHandlingStreamReader<TResponse>(call.ResponseStream, _logger, context.Method),
+                    new ErrorHandlingStreamReader<TResponse>(call.ResponseStream, _logger, context.Method.Name),
                     call.ResponseHeadersAsync,
                     call.GetStatus,
                     call.GetTrailers,
@@ -134,7 +135,7 @@ namespace GenericDataPlatform.Common.Resilience
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting duplex streaming call to {Method}", context.Method.FullName);
+                _logger.LogError(ex, "Error starting duplex streaming call to {Method}", context.Method.Name);
                 throw;
             }
         }
@@ -147,13 +148,13 @@ namespace GenericDataPlatform.Common.Resilience
     {
         private readonly IAsyncStreamReader<T> _inner;
         private readonly ILogger _logger;
-        private readonly Method<object, object> _method;
+        private readonly string _methodName;
 
-        public ErrorHandlingStreamReader(IAsyncStreamReader<T> inner, ILogger logger, Method<object, object> method)
+        public ErrorHandlingStreamReader(IAsyncStreamReader<T> inner, ILogger logger, string methodName)
         {
             _inner = inner;
             _logger = logger;
-            _method = method;
+            _methodName = methodName;
         }
 
         public T Current => _inner.Current;
@@ -167,12 +168,12 @@ namespace GenericDataPlatform.Common.Resilience
             catch (RpcException ex)
             {
                 _logger.LogError(ex, "Error reading from stream. Method: {Method}, Status: {Status}, Detail: {Detail}",
-                    _method.FullName, ex.StatusCode, ex.Status.Detail);
+                    _methodName, ex.StatusCode, ex.Status.Detail);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error reading from stream. Method: {Method}", _method.FullName);
+                _logger.LogError(ex, "Unexpected error reading from stream. Method: {Method}", _methodName);
                 throw;
             }
         }

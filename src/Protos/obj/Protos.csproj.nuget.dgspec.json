@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {}
+    "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {}
   },
   "projects": {
-    "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {
+    "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
+        "projectUniqueName": "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
         "projectName": "Protos",
-        "projectPath": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
+        "projectPath": "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
         "packagesPath": "C:\\Users\\urido\\.nuget\\packages\\",
-        "outputPath": "C:\\dev\\DataPlatform\\src\\Protos\\obj\\",
+        "outputPath": "c:\\dev\\DataPlatform\\src\\Protos\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "CentralPackageTransitivePinningEnabled": true,

@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RabbitMQ.Client;
+using Confluent.Kafka;
 
 namespace GenericDataPlatform.Common.Observability.HealthChecks
 {
@@ -63,7 +65,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
             if (!string.IsNullOrEmpty(rabbitMqConnectionString))
             {
                 healthChecks.AddRabbitMQ(
-                    rabbitMqConnectionString,
+                    sp => CreateRabbitMQConnection(rabbitMqConnectionString),
                     name: "rabbitmq-check",
                     tags: new[] { "messaging", "rabbitmq" });
             }
@@ -73,7 +75,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
             if (!string.IsNullOrEmpty(kafkaBootstrapServers))
             {
                 healthChecks.AddKafka(
-                    kafkaBootstrapServers,
+                    new ProducerConfig { BootstrapServers = kafkaBootstrapServers },
                     name: "kafka-check",
                     tags: new[] { "messaging", "kafka" });
             }
@@ -93,6 +95,16 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
             }
             
             return services;
+        }
+        
+        /// <summary>
+        /// Creates a RabbitMQ connection factory based on the connection string
+        /// </summary>
+        private static IConnection CreateRabbitMQConnection(string connectionString)
+        {
+            var factory = new ConnectionFactory { Uri = new Uri(connectionString) };
+            // Manual connection creation instead of using ConnectionFactory.CreateConnection()
+            return factory.CreateConnection(factory.EndpointResolverFactory(new[] { new AmqpTcpEndpoint(factory.Uri) }));
         }
         
         /// <summary>

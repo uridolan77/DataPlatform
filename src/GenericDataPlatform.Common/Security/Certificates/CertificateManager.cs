@@ -40,39 +40,82 @@ namespace GenericDataPlatform.Common.Security.Certificates
         public X509Certificate2 GetClientCertificate() => _clientCertificate;
 
         /// <summary>
+        /// Gets a certificate by thumbprint from the certificate store
+        /// </summary>
+        public X509Certificate2 GetCertificateByThumbprint(string thumbprint)
+        {
+            using var store = new X509Store(StoreName.My, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+
+            var certificates = store.Certificates.Find(
+                X509FindType.FindByThumbprint,
+                thumbprint,
+                validOnly: false);
+
+            return certificates.Count > 0 ? certificates[0] : null;
+        }
+
+        /// <summary>
+        /// Gets a certificate from a file
+        /// </summary>
+        public X509Certificate2 GetCertificateFromFile(string filePath, string password)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"Certificate file not found: {filePath}");
+            }
+
+            try
+            {
+                return new X509Certificate2(filePath, password);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load certificate from file: {FilePath}", filePath);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates a self-signed certificate
+        /// </summary>
+        public X509Certificate2 CreateSelfSignedCertificate(string subjectName)
+        {
+            return CertificateGenerator.GenerateClientCertificate(
+                _caCertificate, 
+                subjectName, 
+                _options.CertificateValidityInDays);
+        }
+
+        /// <summary>
         /// Initializes the certificate manager
         /// </summary>
         private void Initialize()
         {
             try
             {
-                // Create certificate directory if it doesn't exist
-                if (!Directory.Exists(_options.CertificateDirectory))
-                {
-                    Directory.CreateDirectory(_options.CertificateDirectory);
-                }
+                // Create directory if it doesn't exist
+                Directory.CreateDirectory(_options.CertificateDirectory);
 
-                // Load or generate CA certificate
+                // CA certificate
                 var caPath = Path.Combine(_options.CertificateDirectory, "ca.pfx");
                 if (File.Exists(caPath))
                 {
-                    _caCertificate = CertificateGenerator.ImportFromPfx(caPath, _options.CertificatePassword);
+                    _caCertificate = new X509Certificate2(caPath, _options.CertificatePassword);
                     _logger.LogInformation("Loaded CA certificate from {Path}", caPath);
                 }
                 else
                 {
-                    _caCertificate = CertificateGenerator.GenerateCACertificate(
-                        $"GenericDataPlatform CA",
-                        _options.CertificateValidityInDays);
+                    _caCertificate = CertificateGenerator.GenerateCA($"{_options.ServiceName}.ca", _options.CertificateValidityInDays);
                     CertificateGenerator.ExportToPfx(_caCertificate, caPath, _options.CertificatePassword);
                     _logger.LogInformation("Generated new CA certificate and saved to {Path}", caPath);
                 }
 
-                // Load or generate server certificate
-                var serverPath = Path.Combine(_options.CertificateDirectory, $"{_options.ServiceName}.server.pfx");
+                // Server certificate
+                var serverPath = Path.Combine(_options.CertificateDirectory, "server.pfx");
                 if (File.Exists(serverPath))
                 {
-                    _serverCertificate = CertificateGenerator.ImportFromPfx(serverPath, _options.CertificatePassword);
+                    _serverCertificate = new X509Certificate2(serverPath, _options.CertificatePassword);
                     _logger.LogInformation("Loaded server certificate from {Path}", serverPath);
                 }
                 else
@@ -80,17 +123,16 @@ namespace GenericDataPlatform.Common.Security.Certificates
                     _serverCertificate = CertificateGenerator.GenerateServerCertificate(
                         _caCertificate,
                         $"{_options.ServiceName}.server",
-                        new[] { _options.ServiceName, "localhost" },
                         _options.CertificateValidityInDays);
                     CertificateGenerator.ExportToPfx(_serverCertificate, serverPath, _options.CertificatePassword);
                     _logger.LogInformation("Generated new server certificate and saved to {Path}", serverPath);
                 }
 
-                // Load or generate client certificate
-                var clientPath = Path.Combine(_options.CertificateDirectory, $"{_options.ServiceName}.client.pfx");
+                // Client certificate
+                var clientPath = Path.Combine(_options.CertificateDirectory, "client.pfx");
                 if (File.Exists(clientPath))
                 {
-                    _clientCertificate = CertificateGenerator.ImportFromPfx(clientPath, _options.CertificatePassword);
+                    _clientCertificate = new X509Certificate2(clientPath, _options.CertificatePassword);
                     _logger.LogInformation("Loaded client certificate from {Path}", clientPath);
                 }
                 else
@@ -119,6 +161,9 @@ namespace GenericDataPlatform.Common.Security.Certificates
         X509Certificate2 GetCACertificate();
         X509Certificate2 GetServerCertificate();
         X509Certificate2 GetClientCertificate();
+        X509Certificate2 GetCertificateByThumbprint(string thumbprint);
+        X509Certificate2 GetCertificateFromFile(string filePath, string password);
+        X509Certificate2 CreateSelfSignedCertificate(string subjectName);
     }
 
     /// <summary>

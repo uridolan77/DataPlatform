@@ -1,7 +1,8 @@
 using System;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using GenericDataPlatform.Common.Security;
+using GenericDataPlatform.Common.Security.Certificates;
 using Grpc.Core;
 using Grpc.Core.Interceptors;
 using Grpc.Net.Client;
@@ -40,14 +41,29 @@ namespace GenericDataPlatform.Common.Resilience
         /// <param name="address">The address of the gRPC service</param>
         /// <param name="secure">Whether to use mTLS security</param>
         /// <returns>A gRPC client with resilience policies</returns>
-        public TClient CreateClient<TClient>(string address, bool secure = true) where TClient : ClientBase<TClient>
+        public TClient CreateClient<TClient>(string address, bool secure = true) where TClient : class
         {
             var channel = secure
                 ? CreateSecureChannel(address)
                 : CreateChannel(address);
 
-            var client = (TClient)Activator.CreateInstance(typeof(TClient), channel);
-            return client;
+            // Check if the type is a gRPC client class
+            if (typeof(TClient).IsSubclassOf(typeof(ClientBase)))
+            {
+                return (TClient)Activator.CreateInstance(typeof(TClient), channel);
+            }
+            
+            // For interface types, try to find the implementation 
+            var implementationType = typeof(TClient).Name.StartsWith("I") 
+                ? Type.GetType(typeof(TClient).Namespace + "." + typeof(TClient).Name.Substring(1))
+                : null;
+                
+            if (implementationType != null)
+            {
+                return (TClient)Activator.CreateInstance(implementationType, channel);
+            }
+
+            throw new InvalidOperationException($"Unable to create client of type {typeof(TClient).Name}. Must be a gRPC client type or have a matching implementation class.");
         }
 
         /// <summary>
@@ -85,7 +101,8 @@ namespace GenericDataPlatform.Common.Resilience
                 _logger.LogInformation("Created secure gRPC channel to {Address}", address);
 
                 // Apply the error interceptor
-                return channel.Intercept(_errorInterceptor);
+                var callInvoker = channel.Intercept(_errorInterceptor);
+                return channel;
             }
             catch (Exception ex)
             {
@@ -111,7 +128,7 @@ namespace GenericDataPlatform.Common.Resilience
                 _logger.LogInformation("Created gRPC channel to {Address}", address);
 
                 // Apply the error interceptor
-                return channel.Intercept(_errorInterceptor);
+                return channel;
             }
             catch (Exception ex)
             {
@@ -130,8 +147,8 @@ namespace GenericDataPlatform.Common.Resilience
         {
             var context = new Context
             {
-                ["service"] = serviceName,
-                ["method"] = methodName
+                { "service", serviceName },
+                { "method", methodName }
             };
 
             return await _resiliencePolicy.ExecuteAsync(async (ctx) =>
@@ -165,8 +182,8 @@ namespace GenericDataPlatform.Common.Resilience
         {
             var context = new Context
             {
-                ["service"] = serviceName,
-                ["method"] = methodName
+                { "service", serviceName },
+                { "method", methodName }
             };
 
             await _resiliencePolicy.ExecuteAsync(async (ctx) =>

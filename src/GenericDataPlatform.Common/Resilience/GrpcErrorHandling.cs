@@ -49,12 +49,12 @@ namespace GenericDataPlatform.Common.Resilience
 
             return ex.StatusCode switch
             {
-                StatusCode.InvalidArgument => new ApiException(httpStatus, "InvalidArgument", ex.Status.Detail, ex),
-                StatusCode.NotFound => new ApiException(httpStatus, "NotFound", ex.Status.Detail, ex),
-                StatusCode.AlreadyExists => new ApiException(httpStatus, "AlreadyExists", ex.Status.Detail, ex),
-                StatusCode.PermissionDenied => new ApiException(httpStatus, "PermissionDenied", ex.Status.Detail, ex),
-                StatusCode.Unauthenticated => new ApiException(httpStatus, "Unauthenticated", ex.Status.Detail, ex),
-                _ => new ApiException(httpStatus, "GrpcError", ex.Status.Detail, ex)
+                StatusCode.InvalidArgument => new ApiException(ex.Status.Detail, httpStatus, "InvalidArgument", null, ex),
+                StatusCode.NotFound => new ApiException(ex.Status.Detail, httpStatus, "NotFound", null, ex),
+                StatusCode.AlreadyExists => new ApiException(ex.Status.Detail, httpStatus, "AlreadyExists", null, ex),
+                StatusCode.PermissionDenied => new ApiException(ex.Status.Detail, httpStatus, "PermissionDenied", null, ex),
+                StatusCode.Unauthenticated => new ApiException(ex.Status.Detail, httpStatus, "Unauthenticated", null, ex),
+                _ => new ApiException(ex.Status.Detail, httpStatus, "GrpcError", null, ex)
             };
         }
 
@@ -83,8 +83,12 @@ namespace GenericDataPlatform.Common.Resilience
                 logger.LogError(ex, "Unexpected error calling gRPC service {Service}.{Method}",
                     serviceName, methodName);
 
-                throw new ApiException(HttpStatusCode.InternalServerError, "UnexpectedError",
-                    $"Unexpected error calling {serviceName}.{methodName}: {ex.Message}", ex);
+                throw new ApiException(
+                    $"Unexpected error calling {serviceName}.{methodName}: {ex.Message}", 
+                    HttpStatusCode.InternalServerError, 
+                    "UnexpectedError",
+                    null, 
+                    ex);
             }
         }
 
@@ -113,8 +117,12 @@ namespace GenericDataPlatform.Common.Resilience
                 logger.LogError(ex, "Unexpected error calling gRPC service {Service}.{Method}",
                     serviceName, methodName);
 
-                throw new ApiException(HttpStatusCode.InternalServerError, "UnexpectedError",
-                    $"Unexpected error calling {serviceName}.{methodName}: {ex.Message}", ex);
+                throw new ApiException(
+                    $"Unexpected error calling {serviceName}.{methodName}: {ex.Message}", 
+                    HttpStatusCode.InternalServerError, 
+                    "UnexpectedError",
+                    null, 
+                    ex);
             }
         }
     }

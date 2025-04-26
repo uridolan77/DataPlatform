@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
@@ -181,7 +182,7 @@ namespace GenericDataPlatform.Common.Security.Secrets
         /// <summary>
         /// Gets the appropriate credential based on configuration
         /// </summary>
-        private object GetCredential()
+        private TokenCredential GetCredential()
         {
             // Use managed identity if specified
             if (_options.UseManagedIdentity)

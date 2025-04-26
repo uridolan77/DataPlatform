@@ -54,8 +54,11 @@ namespace GenericDataPlatform.Common.Security.Secrets
                 {
                     var secretValue = value.ToString();
                     
-                    // Cache the secret
-                    _secretCache[key] = secretValue;
+                    // Cache the secret if it's not null or empty
+                    if (!string.IsNullOrEmpty(secretValue))
+                    {
+                        _secretCache[key] = secretValue;
+                    }
                     
                     return secretValue;
                 }

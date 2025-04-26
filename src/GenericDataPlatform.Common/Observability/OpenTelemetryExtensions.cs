@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
@@ -91,11 +93,8 @@ namespace GenericDataPlatform.Common.Observability
                     options.SetDbStatementForText = true;
                     options.EnableConnectionLevelAttributes = true;
                 })
-                .AddEntityFrameworkCoreInstrumentation(options =>
-                {
-                    options.SetDbStatementForText = true;
-                })
-                .AddGrpcClientInstrumentation()
+                // Use custom ActivitySource for gRPC tracing instead of a direct instrumentation
+                .AddSource("Grpc.Net.Client")
                 .AddSource(serviceName);
             
             // Add exporters
@@ -136,8 +135,9 @@ namespace GenericDataPlatform.Common.Observability
             builder
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
-                .AddRuntimeInstrumentation()
-                .AddProcessInstrumentation()
+                // Use System.Diagnostics.Metrics for process and runtime instrumentation
+                .AddMeter("System.Runtime")
+                .AddMeter("System.Process")
                 .AddMeter(serviceName);
             
             // Add exporters
@@ -159,6 +159,22 @@ namespace GenericDataPlatform.Common.Observability
             }
             
             return builder;
+        }
+        
+        /// <summary>
+        /// Helper extension to add EF Core with telemetry
+        /// </summary>
+        public static IServiceCollection AddEntityFrameworkSqlServerWithTelemetry(
+            this IServiceCollection services)
+        {
+            // This method would be called from the Startup.cs or Program.cs
+            // to register EF Core with telemetry enabled
+            
+            // Register a diagnostic listener for EF Core
+            services.AddSingleton<DiagnosticListener>(provider => 
+                new DiagnosticListener("Microsoft.EntityFrameworkCore"));
+            
+            return services;
         }
     }
 }

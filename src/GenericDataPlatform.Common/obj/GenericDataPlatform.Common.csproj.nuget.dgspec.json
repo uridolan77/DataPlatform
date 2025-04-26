@@ -331,6 +331,11 @@
               "version": "[2.3.0, )",
               "versionCentrallyManaged": true
             },
+            "Serilog.Enrichers.Thread": {
+              "target": "Package",
+              "version": "[3.1.0, )",
+              "versionCentrallyManaged": true
+            },
             "Serilog.Extensions.Logging": {
               "target": "Package",
               "version": "[8.0.0, )",
@@ -488,14 +493,14 @@
         }
       }
     },
-    "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {
+    "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
+        "projectUniqueName": "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
         "projectName": "Protos",
-        "projectPath": "C:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
+        "projectPath": "c:\\dev\\DataPlatform\\src\\Protos\\Protos.csproj",
         "packagesPath": "C:\\Users\\urido\\.nuget\\packages\\",
-        "outputPath": "C:\\dev\\DataPlatform\\src\\Protos\\obj\\",
+        "outputPath": "c:\\dev\\DataPlatform\\src\\Protos\\obj\\",
         "projectStyle": "PackageReference",
         "centralPackageVersionsManagementEnabled": true,
         "CentralPackageTransitivePinningEnabled": true,

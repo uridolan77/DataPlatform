@@ -33,33 +33,41 @@ namespace GenericDataPlatform.Common.Clients
         /// <summary>
         /// Gets metadata for a file
         /// </summary>
-        public async Task<StorageMetadata> GetMetadataAsync(string bucket, string path, CancellationToken cancellationToken = default)
+        public async Task<StorageMetadata> GetMetadataAsync(string path, CancellationToken cancellationToken = default)
         {
             var request = new GetMetadataRequest
             {
-                Bucket = bucket,
                 Path = path
             };
 
             return await _clientFactory.CallServiceAsync(
-                () => _client.GetMetadataAsync(request, cancellationToken: cancellationToken),
+                async () => 
+                {
+                    var response = await _client.GetMetadataAsync(request, cancellationToken: cancellationToken);
+                    return response;
+                },
                 _serviceName,
                 nameof(GetMetadataAsync));
         }
 
         /// <summary>
-        /// Lists files in a bucket
+        /// Lists files in storage
         /// </summary>
-        public async Task<ListFilesResponse> ListFilesAsync(string bucket, string prefix = null, CancellationToken cancellationToken = default)
+        public async Task<ListFilesResponse> ListFilesAsync(string path = null, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default)
         {
             var request = new ListFilesRequest
             {
-                Bucket = bucket,
-                Prefix = prefix ?? string.Empty
+                Path = path ?? "",
+                Prefix = prefix ?? "",
+                Recursive = recursive
             };
 
             return await _clientFactory.CallServiceAsync(
-                () => _client.ListFilesAsync(request, cancellationToken: cancellationToken),
+                async () => 
+                {
+                    var response = await _client.ListFilesAsync(request, cancellationToken: cancellationToken);
+                    return response;
+                },
                 _serviceName,
                 nameof(ListFilesAsync));
         }
@@ -67,56 +75,69 @@ namespace GenericDataPlatform.Common.Clients
         /// <summary>
         /// Uploads a file to storage
         /// </summary>
-        public async Task<UploadFileResponse> UploadFileAsync(string bucket, string path, Stream content, CancellationToken cancellationToken = default)
+        public async Task<UploadFileResponse> UploadFileAsync(string path, Stream content, string contentType = null, string filename = null, 
+            Dictionary<string, string> metadata = null, string storageTier = null, bool compress = false, bool encrypt = false, 
+            CancellationToken cancellationToken = default)
         {
-            // Create a call with resilience policies
-            var call = _client.UploadFile(cancellationToken: cancellationToken);
+            // Prepare the file metadata
+            var fileMetadata = new FileMetadata
+            {
+                Filename = filename ?? Path.GetFileName(path),
+                ContentType = contentType ?? GetContentType(path),
+                TotalSize = content.Length,
+                StorageTier = storageTier ?? "standard",
+                Compress = compress,
+                Encrypt = encrypt
+            };
+
+            // Add custom metadata if available
+            if (metadata != null)
+            {
+                foreach (var item in metadata)
+                {
+                    fileMetadata.CustomMetadata.Add(item.Key, item.Value);
+                }
+            }
+
+            // Create the request with metadata
+            var request = new UploadFileRequest
+            {
+                Path = path,
+                ContentMimeType = contentType ?? GetContentType(path),
+                Name = filename ?? Path.GetFileName(path),
+                Metadata = fileMetadata
+            };
+
+            // Read content into memory for simple upload
+            // For large files, this should be changed to use streaming
+            using (var memoryStream = new MemoryStream())
+            {
+                await content.CopyToAsync(memoryStream, cancellationToken);
+                memoryStream.Position = 0;
+                request.Content = Google.Protobuf.ByteString.FromStream(memoryStream);
+            }
 
             try
             {
-                // Send metadata first
-                await call.RequestStream.WriteAsync(new UploadFileRequest
-                {
-                    Metadata = new FileMetadata
+                // Send the request
+                return await _clientFactory.CallServiceAsync(
+                    async () => 
                     {
-                        Bucket = bucket,
-                        Path = path,
-                        ContentType = GetContentType(path),
-                        Size = content.Length
-                    }
-                });
-
-                // Send file content in chunks
-                var buffer = new byte[64 * 1024]; // 64 KB chunks
-                int bytesRead;
-                while ((bytesRead = await content.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-                {
-                    await call.RequestStream.WriteAsync(new UploadFileRequest
-                    {
-                        ChunkData = Google.Protobuf.ByteString.CopyFrom(buffer, 0, bytesRead)
-                    });
-                }
-
-                // Complete the request
-                await call.RequestStream.CompleteAsync();
-
-                // Get the response
-                return await call.ResponseAsync;
-            }
-            catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && cancellationToken.IsCancellationRequested)
-            {
-                _logger.LogWarning("Upload cancelled by user for {Bucket}/{Path}", bucket, path);
-                throw;
+                        var response = await _client.UploadFileAsync(request, cancellationToken: cancellationToken);
+                        return response;
+                    },
+                    _serviceName,
+                    nameof(UploadFileAsync));
             }
             catch (RpcException ex)
             {
-                _logger.LogError(ex, "Error uploading file to {Bucket}/{Path}. Status: {Status}, Detail: {Detail}",
-                    bucket, path, ex.StatusCode, ex.Status.Detail);
-                throw GrpcErrorHandling.MapRpcExceptionToApplicationException(ex);
+                _logger.LogError(ex, "Error uploading file to {Path}. Status: {Status}, Detail: {Detail}",
+                    path, ex.StatusCode, ex.Status.Detail);
+                throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error uploading file to {Bucket}/{Path}", bucket, path);
+                _logger.LogError(ex, "Unexpected error uploading file to {Path}", path);
                 throw;
             }
         }
@@ -124,42 +145,43 @@ namespace GenericDataPlatform.Common.Clients
         /// <summary>
         /// Downloads a file from storage
         /// </summary>
-        public async Task DownloadFileAsync(string bucket, string path, Stream destination, CancellationToken cancellationToken = default)
+        public async Task<Stream> DownloadFileAsync(string path, CancellationToken cancellationToken = default)
         {
             var request = new DownloadFileRequest
             {
-                Bucket = bucket,
                 Path = path
             };
 
-            // Create streaming call
-            using var call = _client.DownloadFile(request, cancellationToken: cancellationToken);
-
             try
             {
-                // Process the response stream
+                var memoryStream = new MemoryStream();
+                using var call = _client.DownloadFile(request, cancellationToken: cancellationToken);
+                
                 await foreach (var response in call.ResponseStream.ReadAllAsync(cancellationToken))
                 {
-                    if (response.ChunkData != null)
+                    if (response.ResponseCase == DownloadFileResponse.ResponseOneofCase.ChunkData)
                     {
-                        await destination.WriteAsync(response.ChunkData.ToByteArray(), 0, response.ChunkData.Length, cancellationToken);
+                        await memoryStream.WriteAsync(response.ChunkData.ToByteArray(), 0, response.ChunkData.Length, cancellationToken);
                     }
                 }
+                
+                memoryStream.Position = 0;
+                return memoryStream;
             }
             catch (RpcException ex) when (ex.StatusCode == StatusCode.Cancelled && cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Download cancelled by user for {Bucket}/{Path}", bucket, path);
+                _logger.LogWarning("Download cancelled by user for {Path}", path);
                 throw;
             }
             catch (RpcException ex)
             {
-                _logger.LogError(ex, "Error downloading file from {Bucket}/{Path}. Status: {Status}, Detail: {Detail}",
-                    bucket, path, ex.StatusCode, ex.Status.Detail);
-                throw GrpcErrorHandling.MapRpcExceptionToApplicationException(ex);
+                _logger.LogError(ex, "Error downloading file from {Path}. Status: {Status}, Detail: {Detail}",
+                    path, ex.StatusCode, ex.Status.Detail);
+                throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error downloading file from {Bucket}/{Path}", bucket, path);
+                _logger.LogError(ex, "Unexpected error downloading file from {Path}", path);
                 throw;
             }
         }
@@ -167,16 +189,24 @@ namespace GenericDataPlatform.Common.Clients
         /// <summary>
         /// Deletes a file from storage
         /// </summary>
-        public async Task<DeleteFileResponse> DeleteFileAsync(string bucket, string path, CancellationToken cancellationToken = default)
+        public async Task<DeleteFileResponse> DeleteFileAsync(string path, string id = null, CancellationToken cancellationToken = default)
         {
             var request = new DeleteFileRequest
             {
-                Bucket = bucket,
                 Path = path
             };
 
+            if (!string.IsNullOrEmpty(id))
+            {
+                request.Id = id;
+            }
+
             return await _clientFactory.CallServiceAsync(
-                () => _client.DeleteFileAsync(request, cancellationToken: cancellationToken),
+                async () => 
+                {
+                    var response = await _client.DeleteFileAsync(request, cancellationToken: cancellationToken);
+                    return response;
+                },
                 _serviceName,
                 nameof(DeleteFileAsync));
         }
@@ -184,17 +214,42 @@ namespace GenericDataPlatform.Common.Clients
         /// <summary>
         /// Gets storage statistics
         /// </summary>
-        public async Task<StorageStatistics> GetStatisticsAsync(string bucket = null, CancellationToken cancellationToken = default)
+        public async Task<StorageStatistics> GetStatisticsAsync(string prefix = null, CancellationToken cancellationToken = default)
         {
-            var request = new GetStatisticsRequest
+            var request = new GetStorageStatisticsRequest
             {
-                Bucket = bucket ?? string.Empty
+                Prefix = prefix ?? ""
             };
 
             return await _clientFactory.CallServiceAsync(
-                () => _client.GetStatisticsAsync(request, cancellationToken: cancellationToken),
+                async () => 
+                {
+                    var response = await _client.GetStorageStatisticsAsync(request, cancellationToken: cancellationToken);
+                    return response;
+                },
                 _serviceName,
                 nameof(GetStatisticsAsync));
+        }
+
+        /// <summary>
+        /// Copies a file within storage
+        /// </summary>
+        public async Task<CopyFileResponse> CopyFileAsync(string sourcePath, string destinationPath, CancellationToken cancellationToken = default)
+        {
+            var request = new CopyFileRequest
+            {
+                SourcePath = sourcePath,
+                DestinationPath = destinationPath
+            };
+
+            return await _clientFactory.CallServiceAsync(
+                async () => 
+                {
+                    var response = await _client.CopyFileAsync(request, cancellationToken: cancellationToken);
+                    return response;
+                },
+                _serviceName,
+                nameof(CopyFileAsync));
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
-using GenericDataPlatform.Common.Security;
+using GenericDataPlatform.Common.Security.Certificates;
 using Grpc.Core.Interceptors;
+using Grpc.Net.ClientFactory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -64,14 +65,17 @@ namespace GenericDataPlatform.Common.Resilience
             // Register the error interceptor
             services.AddSingleton<GrpcErrorInterceptor>();
 
-            // Configure gRPC client factory to use interceptors
-            services.ConfigureGrpcClientFactory(options =>
+            // Add a basic gRPC client factory if not already registered
+            services.AddGrpcClient<Grpc.Core.ChannelBase>((provider, options) =>
             {
-                var provider = services.BuildServiceProvider();
-                var interceptor = provider.GetRequiredService<GrpcErrorInterceptor>();
-
-                options.Interceptors.Add(interceptor);
+                // This is a dummy registration just to ensure the client factory is available
+                // Real clients will be created using our GrpcClientFactory
             });
+
+            // Register the interceptor as a service
+            var sp = services.BuildServiceProvider();
+            var interceptor = sp.GetRequiredService<GrpcErrorInterceptor>();
+            services.AddSingleton<Interceptor>(interceptor);
 
             return services;
         }

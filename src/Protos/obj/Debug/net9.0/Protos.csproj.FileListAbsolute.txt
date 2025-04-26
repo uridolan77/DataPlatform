@@ -1,8 +1,8 @@
-c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.csproj.AssemblyReference.cache
-c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.GeneratedMSBuildEditorConfig.editorconfig
 c:\dev\DataPlatform\src\Protos\bin\Debug\net9.0\Protos.deps.json
 c:\dev\DataPlatform\src\Protos\bin\Debug\net9.0\Protos.dll
 c:\dev\DataPlatform\src\Protos\bin\Debug\net9.0\Protos.pdb
+c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.csproj.AssemblyReference.cache
+c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.GeneratedMSBuildEditorConfig.editorconfig
 c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.AssemblyInfoInputs.cache
 c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.AssemblyInfo.cs
 c:\dev\DataPlatform\src\Protos\obj\Debug\net9.0\Protos.csproj.CoreCompileInputs.cache

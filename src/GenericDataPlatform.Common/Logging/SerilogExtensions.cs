@@ -25,9 +25,10 @@ namespace GenericDataPlatform.Common.Logging
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty("ServiceName", serviceName)
                 .Enrich.WithMachineName()
-                .Enrich.WithProcessId()
-                .Enrich.WithThreadId()
-                .Enrich.WithEnvironment(builder.Environment.EnvironmentName)
+                .Enrich.WithEnvironmentUserName()
+                .Enrich.WithEnvironmentName()
+                .Enrich.With<ThreadIdEnricher>()
+                .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
                 .WriteTo.File(
                     new JsonFormatter(), 
@@ -73,6 +74,18 @@ namespace GenericDataPlatform.Common.Logging
             });
             
             return app;
+        }
+    }
+
+    /// <summary>
+    /// Custom enricher for thread ID
+    /// </summary>
+    public class ThreadIdEnricher : Serilog.Core.ILogEventEnricher
+    {
+        public void Enrich(Serilog.Events.LogEvent logEvent, Serilog.Core.ILogEventPropertyFactory propertyFactory)
+        {
+            logEvent.AddPropertyIfAbsent(propertyFactory.CreateProperty(
+                "ThreadId", System.Threading.Thread.CurrentThread.ManagedThreadId));
         }
     }
 }
