@@ -1,11 +1,28 @@
 {
   "version": 2,
-  "dgSpecHash": "I8kxQfhasOY=",
+  "dgSpecHash": "psmna2mOFaw=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.StorageService\\GenericDataPlatform.StorageService.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.4\\microsoft.aspnetcore.openapi.9.0.4.nupkg.sha512",
-    "C:\\Users\\urido\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.4\\microsoft.extensions.configuration.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.4\\microsoft.extensions.configuration.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.configuration.binder\\9.0.4\\microsoft.extensions.configuration.binder.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.dependencyinjection\\9.0.4\\microsoft.extensions.dependencyinjection.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.4\\microsoft.extensions.dependencyinjection.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.diagnostics\\9.0.4\\microsoft.extensions.diagnostics.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\9.0.4\\microsoft.extensions.diagnostics.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.http\\9.0.4\\microsoft.extensions.http.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.http.polly\\9.0.4\\microsoft.extensions.http.polly.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.logging\\9.0.4\\microsoft.extensions.logging.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.4\\microsoft.extensions.logging.abstractions.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.options\\9.0.4\\microsoft.extensions.options.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\9.0.4\\microsoft.extensions.options.configurationextensions.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.4\\microsoft.extensions.primitives.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\polly\\8.3.1\\polly.8.3.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\polly.core\\8.3.1\\polly.core.8.3.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\polly.extensions.http\\3.0.0\\polly.extensions.http.3.0.0.nupkg.sha512"
   ],
   "logs": []
 }

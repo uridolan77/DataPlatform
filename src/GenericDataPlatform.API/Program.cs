@@ -1,9 +1,18 @@
 using System.Text;
+using System.Net;
+using System.Net.Http;
+using GenericDataPlatform.API.Middleware;
 using GenericDataPlatform.API.Models.Auth;
+using GenericDataPlatform.API.Repositories;
 using GenericDataPlatform.API.Services.Auth;
+using GenericDataPlatform.API.Services.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Timeout;
+using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +93,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 // Register data services
 builder.Services.AddScoped<IDataService, DataService>();
 
+// Configure Polly for HTTP client resilience
+builder.Services.AddHttpClient("ApiClient")
+    .AddPolicyHandler(GetRetryPolicy())
+    .AddPolicyHandler(GetCircuitBreakerPolicy());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -93,6 +107,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Generic Data Platform API v1"));
 }
 
+// Add global exception handling middleware
+app.UseGlobalExceptionHandler();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
@@ -101,3 +118,41 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Polly policy methods
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError() // HttpRequestException, 5XX and 408
+        .OrResult(msg => msg.StatusCode == HttpStatusCode.TooManyRequests) // 429
+        .WaitAndRetryAsync(
+            retryCount: 3,
+            retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), // Exponential backoff
+            onRetry: (outcome, timespan, retryAttempt, context) =>
+            {
+                context.GetLogger()?.LogWarning("Delaying for {delay}ms, then making retry {retry}.",
+                    timespan.TotalMilliseconds, retryAttempt);
+            });
+}
+
+static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .CircuitBreakerAsync(
+            handledEventsAllowedBeforeBreaking: 5,
+            durationOfBreak: TimeSpan.FromSeconds(30),
+            onBreak: (outcome, timespan, context) =>
+            {
+                context.GetLogger()?.LogWarning("Circuit breaker opened for {duration}s due to: {outcome}.",
+                    timespan.TotalSeconds, outcome.Exception?.Message ?? outcome.Result?.StatusCode.ToString());
+            },
+            onReset: context =>
+            {
+                context.GetLogger()?.LogInformation("Circuit breaker reset.");
+            },
+            onHalfOpen: () =>
+            {
+                // Called when the circuit transitions to half-open state
+            });
+}

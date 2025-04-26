@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "IC776G6poNc=",
+  "dgSpecHash": "V1b1OtZKIwA=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.IngestionService\\GenericDataPlatform.IngestionService.csproj",
   "expectedPackageFiles": [
@@ -22,6 +22,7 @@
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.diagnostics\\9.0.4\\microsoft.extensions.diagnostics.9.0.4.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\9.0.4\\microsoft.extensions.diagnostics.abstractions.9.0.4.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.http\\9.0.4\\microsoft.extensions.http.9.0.4.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.http.polly\\9.0.4\\microsoft.extensions.http.polly.9.0.4.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.logging\\9.0.4\\microsoft.extensions.logging.9.0.4.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\9.0.4\\microsoft.extensions.logging.abstractions.9.0.4.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.extensions.options\\9.0.4\\microsoft.extensions.options.9.0.4.nupkg.sha512",
@@ -33,6 +34,9 @@
     "C:\\Users\\urido\\.nuget\\packages\\microsoft.win32.registry\\4.7.0\\microsoft.win32.registry.4.7.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\mysql.data\\9.3.0\\mysql.data.9.3.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\npgsql\\9.0.3\\npgsql.9.0.3.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\polly\\8.3.1\\polly.8.3.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\polly.core\\8.3.1\\polly.core.8.3.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\polly.extensions.http\\3.0.0\\polly.extensions.http.3.0.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\runtime.native.system.data.sqlclient.sni\\4.7.0\\runtime.native.system.data.sqlclient.sni.4.7.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\runtime.win-arm64.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-arm64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\runtime.win-x64.runtime.native.system.data.sqlclient.sni\\4.4.0\\runtime.win-x64.runtime.native.system.data.sqlclient.sni.4.4.0.nupkg.sha512",

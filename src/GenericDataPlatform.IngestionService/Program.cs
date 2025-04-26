@@ -1,9 +1,17 @@
+using System;
+using System.Net;
+using System.Net.Http;
+using GenericDataPlatform.Common.Resilience;
 using GenericDataPlatform.IngestionService.Connectors;
 using GenericDataPlatform.IngestionService.Connectors.Database;
 using GenericDataPlatform.IngestionService.Connectors.FileSystem;
 using GenericDataPlatform.IngestionService.Connectors.Rest;
 using GenericDataPlatform.IngestionService.Connectors.Streaming;
+using GenericDataPlatform.IngestionService.Middleware;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Polly;
+using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +25,25 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Generic Data Platform Ingestion API", Version = "v1" });
 });
 
-// Add HTTP client factory
-builder.Services.AddHttpClient();
+// Add HTTP client factory with resilience policies
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+
+// Default HTTP client with resilience policies
+builder.Services.AddHttpClient()
+    .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetRetryPolicy(logger))
+    .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetCircuitBreakerPolicy(logger))
+    .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetTimeoutPolicy(logger));
+
+// Named HTTP client for REST API connector
+builder.Services.AddHttpClient("RestApiClient")
+    .AddPolicyHandler((services, request) =>
+    {
+        request.SetPolicyExecutionContext(new Context
+        {
+            ["url"] = request.RequestUri?.ToString()
+        });
+        return HttpClientResiliencePolicies.GetCombinedPolicy(logger);
+    });
 
 // Register database connectors
 builder.Services.AddScoped<SqlServerConnector>();
@@ -47,6 +72,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Generic Data Platform Ingestion API v1"));
 }
+
+// Add global exception handling middleware
+app.UseGlobalExceptionHandler();
 
 app.UseHttpsRedirection();
 

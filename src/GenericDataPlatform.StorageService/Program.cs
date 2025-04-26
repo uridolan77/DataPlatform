@@ -1,8 +1,21 @@
+using System;
+using GenericDataPlatform.Common.Resilience;
+using GenericDataPlatform.StorageService.Middleware;
+using Microsoft.Extensions.Logging;
+using Polly;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
+
+// Get logger for resilience policies
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+
+// Add resilience policies
+builder.Services.AddSingleton(HttpClientResiliencePolicies.GetCombinedPolicy(logger));
 
 var app = builder.Build();
 
@@ -11,6 +24,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Add global exception handling middleware
+app.UseGlobalExceptionHandler();
 
 app.UseHttpsRedirection();
 
