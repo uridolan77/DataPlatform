@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.Common")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a3846db04abaf4aacc97408ba2d2f27ae0412603")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+45c8a0268eb514391987ae10122e00a6a9299e43")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.Common")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.Common")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

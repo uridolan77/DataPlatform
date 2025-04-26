@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("GenericDataPlatform-API-9A8B7C6D-5E4F-3A2B-1C0D-9E8F7A6B5C4D")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cb42a48258a7e550151f49d6e4dfe990051dfc17")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+45c8a0268eb514391987ae10122e00a6a9299e43")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

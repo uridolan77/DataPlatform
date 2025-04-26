@@ -6,6 +6,10 @@ using GenericDataPlatform.API.Models.Auth;
 using GenericDataPlatform.API.Repositories;
 using GenericDataPlatform.API.Services.Auth;
 using GenericDataPlatform.API.Services.Data;
+using GenericDataPlatform.Common.Logging;
+using GenericDataPlatform.Common.Observability;
+using GenericDataPlatform.Common.Observability.HealthChecks;
+using GenericDataPlatform.Common.Security.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -14,13 +18,30 @@ using Polly.Extensions.Http;
 using Polly.Timeout;
 using Polly.Retry;
 
+// Configure Serilog
 var builder = WebApplication.CreateBuilder(args);
+builder.AddSerilog("API");
+
+// Configure user secrets in development environment
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Add secret provider
+builder.Services.AddSecretProvider(builder.Configuration);
+
+// Add OpenTelemetry
+builder.Services.AddOpenTelemetryServices(builder.Configuration, "API", "1.0.0");
+
+// Add health checks
+builder.Services.AddHealthChecks(builder.Configuration, "API");
 
 // Add HTTP client factory
 builder.Services.AddHttpClient();
@@ -29,7 +50,12 @@ builder.Services.AddHttpClient();
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JwtSettings>(jwtSettings);
 
-var secret = jwtSettings["Secret"];
+// Get JWT secret from secret provider
+var secretProvider = builder.Services.BuildServiceProvider().GetRequiredService<ISecretProvider>();
+var secret = secretProvider.GetSecretAsync("jwt/secret").GetAwaiter().GetResult()
+    ?? jwtSettings["Secret"]
+    ?? throw new InvalidOperationException("JWT secret not configured");
+
 var key = Encoding.ASCII.GetBytes(secret);
 
 builder.Services.AddAuthentication(options =>
@@ -39,7 +65,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = true;
     options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -107,8 +133,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Generic Data Platform API v1"));
 }
 
+// Add request logging
+app.UseRequestLogging();
+
 // Add global exception handling middleware
 app.UseGlobalExceptionHandler();
+
+// Add health checks
+app.UseHealthChecks();
 
 app.UseHttpsRedirection();
 
@@ -117,7 +149,21 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    app.Logger.LogInformation("Starting API Service");
+    app.Run();
+    return 0;
+}
+catch (Exception ex)
+{
+    app.Logger.LogCritical(ex, "API Service terminated unexpectedly");
+    return 1;
+}
+finally
+{
+    Serilog.Log.CloseAndFlush();
+}
 
 // Polly policy methods
 static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()

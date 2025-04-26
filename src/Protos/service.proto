@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+option csharp_namespace = "GenericDataPlatform.Grpc";
+
+package genericdataplatform;
+
+// Common service interface for inter-service communication
+service DataService {
+  // Get data by ID
+  rpc GetData (GetDataRequest) returns (GetDataResponse);
+  
+  // Query data with filters
+  rpc QueryData (QueryDataRequest) returns (QueryDataResponse);
+  
+  // Stream data changes
+  rpc StreamData (StreamDataRequest) returns (stream DataRecord);
+}
+
+// Request to get data by ID
+message GetDataRequest {
+  string source_id = 1;
+  string record_id = 2;
+}
+
+// Response containing a single data record
+message GetDataResponse {
+  DataRecord record = 1;
+}
+
+// Request to query data with filters
+message QueryDataRequest {
+  string source_id = 1;
+  repeated Filter filters = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// Response containing multiple data records
+message QueryDataResponse {
+  repeated DataRecord records = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+  int32 total_pages = 5;
+}
+
+// Request to stream data changes
+message StreamDataRequest {
+  string source_id = 1;
+  repeated Filter filters = 2;
+  bool include_history = 3;
+}
+
+// Filter for querying data
+message Filter {
+  string field = 1;
+  string operator = 2;
+  string value = 3;
+}
+
+// Data record
+message DataRecord {
+  string id = 1;
+  string source_id = 2;
+  map<string, Value> data = 3;
+  Timestamp created_at = 4;
+  Timestamp updated_at = 5;
+}
+
+// Value type for data fields
+message Value {
+  oneof kind {
+    string string_value = 1;
+    int64 int_value = 2;
+    double double_value = 3;
+    bool bool_value = 4;
+    Timestamp timestamp_value = 5;
+    bytes bytes_value = 6;
+  }
+}
+
+// Timestamp representation
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
