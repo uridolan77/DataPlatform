@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.StorageService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cb42a48258a7e550151f49d6e4dfe990051dfc17")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7d46350478787199f4de63bd5186ad5fe3ed2e8b")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.StorageService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.StorageService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

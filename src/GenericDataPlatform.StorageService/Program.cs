@@ -1,6 +1,10 @@
 using System;
+using GenericDataPlatform.Common.Clients;
 using GenericDataPlatform.Common.Resilience;
+using GenericDataPlatform.Common.Security;
+using GenericDataPlatform.Protos;
 using GenericDataPlatform.StorageService.Middleware;
+using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 using Polly;
 
@@ -16,6 +20,41 @@ var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<
 
 // Add resilience policies
 builder.Services.AddSingleton(HttpClientResiliencePolicies.GetCombinedPolicy(logger));
+
+// Add gRPC services
+builder.Services.AddGrpc(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.MaxReceiveMessageSize = 16 * 1024 * 1024; // 16 MB
+    options.MaxSendMessageSize = 16 * 1024 * 1024; // 16 MB
+});
+
+// Add certificate manager for secure gRPC
+builder.Services.AddSingleton<ICertificateManager, CertificateManager>();
+
+// Add resilient gRPC client factory
+builder.Services.AddResilientGrpcClientFactory();
+
+// Add gRPC client interceptors
+builder.Services.AddGrpcClientInterceptors();
+
+// Register the StorageService gRPC client
+var storageServiceUrl = builder.Configuration["Services:StorageService:Url"] ?? "https://localhost:5207";
+builder.Services.AddSingleton(provider =>
+{
+    var factory = provider.GetRequiredService<GrpcClientFactory>();
+    var channel = factory.CreateChannel(storageServiceUrl);
+    return new StorageService.StorageServiceClient(channel);
+});
+
+// Register the resilient storage service client
+builder.Services.AddSingleton<ResilientStorageServiceClient>();
+
+// Configure gRPC server interceptors
+builder.Services.AddGrpc(options =>
+{
+    options.Interceptors.Add<GrpcErrorInterceptor>();
+});
 
 var app = builder.Build();
 
