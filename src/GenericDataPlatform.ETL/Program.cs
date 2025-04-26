@@ -23,8 +23,13 @@ using GenericDataPlatform.ETL.Transformers.Csv;
 using GenericDataPlatform.ETL.Transformers.Json;
 using GenericDataPlatform.ETL.Transformers.Xml;
 using GenericDataPlatform.ETL.Validators;
+using GenericDataPlatform.ETL.Workflows;
+using GenericDataPlatform.ETL.Workflows.Interfaces;
+using GenericDataPlatform.ETL.Workflows.Monitoring;
+using GenericDataPlatform.ETL.Workflows.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Extensions.Http;
@@ -117,7 +122,17 @@ builder.Services.AddElsaApiEndpoints();
 // Add Elsa Dashboard
 builder.Services.AddElsaDashboard();
 
-// Add ETL workflow services
+// Configure workflow options
+builder.Services.Configure<WorkflowOptions>(builder.Configuration.GetSection("WorkflowOptions"));
+
+// Register SQL Server resilience policy for workflow repository
+var workflowLogger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+builder.Services.AddSingleton<IAsyncPolicy>(SqlServerResiliencePolicies.GetCombinedAsyncPolicy(workflowLogger));
+
+// Register workflow repositories and services
+builder.Services.AddScoped<IWorkflowRepository, DatabaseWorkflowRepository>();
+builder.Services.AddScoped<IWorkflowMonitor, WorkflowMonitor>();
+builder.Services.AddScoped<IWorkflowEngine, WorkflowEngine>();
 builder.Services.AddScoped<IEtlWorkflowService, EtlWorkflowService>();
 builder.Services.AddScoped<IWorkflowDefinitionBuilder, WorkflowDefinitionBuilder>();
 

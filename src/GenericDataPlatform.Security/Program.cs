@@ -2,15 +2,19 @@ using System;
 using GenericDataPlatform.Common.Logging;
 using GenericDataPlatform.Common.Observability;
 using GenericDataPlatform.Common.Observability.HealthChecks;
+using GenericDataPlatform.Common.Resilience;
 using GenericDataPlatform.Common.Security.Secrets;
+using GenericDataPlatform.Security.Models;
 using GenericDataPlatform.Security.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Polly;
 using Serilog;
 
 // Configure Serilog
@@ -31,7 +35,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Generic Data Platform Security API", Version = "v1" });
-    
+
     // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -66,6 +70,14 @@ builder.Services.AddOpenTelemetryServices(builder.Configuration, "Security", "1.
 
 // Add health checks
 builder.Services.AddHealthChecks(builder.Configuration, "Security");
+
+// Configure security options
+builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
+builder.Services.Configure<ConnectionStrings>(builder.Configuration.GetSection("ConnectionStrings"));
+
+// Register SQL Server resilience policy
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+builder.Services.AddSingleton(SqlServerResiliencePolicies.GetCombinedAsyncPolicy(logger));
 
 // Configure CORS
 var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:3000" };
@@ -105,6 +117,20 @@ builder.Services.AddScoped<ISecurityScanner, SecurityScanner>();
 builder.Services.AddScoped<IVulnerabilityRepository, VulnerabilityRepository>();
 builder.Services.AddScoped<IComplianceService, ComplianceService>();
 builder.Services.AddScoped<IDataLineageService, DataLineageService>();
+
+// Register repositories
+// Use DatabaseAlertRepository if SQL Server connection string is configured, otherwise use file-based AlertRepository
+var connectionString = builder.Configuration.GetConnectionString("SqlServer");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    builder.Services.AddScoped<IAlertRepository, DatabaseAlertRepository>();
+    builder.Logger.LogInformation("Using DatabaseAlertRepository with SQL Server");
+}
+else
+{
+    builder.Services.AddScoped<IAlertRepository, AlertRepository>();
+    builder.Logger.LogInformation("Using file-based AlertRepository");
+}
 
 // Register background services
 builder.Services.AddHostedService<SecurityScanBackgroundService>();

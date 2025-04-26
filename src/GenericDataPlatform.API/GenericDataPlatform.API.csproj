@@ -43,4 +43,13 @@
     <ProjectReference Include="..\GenericDataPlatform.Common\GenericDataPlatform.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Database\Scripts\CreateUserTable.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.28" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+  </ItemGroup>
+
 </Project>

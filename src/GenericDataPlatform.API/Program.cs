@@ -2,6 +2,7 @@ using System.Text;
 using System.Net;
 using System.Net.Http;
 using GenericDataPlatform.API.Middleware;
+using GenericDataPlatform.API.Models;
 using GenericDataPlatform.API.Models.Auth;
 using GenericDataPlatform.API.Repositories;
 using GenericDataPlatform.API.Services.Auth;
@@ -9,8 +10,10 @@ using GenericDataPlatform.API.Services.Data;
 using GenericDataPlatform.Common.Logging;
 using GenericDataPlatform.Common.Observability;
 using GenericDataPlatform.Common.Observability.HealthChecks;
+using GenericDataPlatform.Common.Resilience;
 using GenericDataPlatform.Common.Security.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Polly;
@@ -42,6 +45,17 @@ builder.Services.AddOpenTelemetryServices(builder.Configuration, "API", "1.0.0")
 
 // Add health checks
 builder.Services.AddHealthChecks(builder.Configuration, "API");
+
+// Configure API options
+builder.Services.Configure<ApiOptions>(options =>
+{
+    options.ConnectionStrings = builder.Configuration.GetSection("ConnectionStrings").Get<ConnectionStrings>();
+    options.ServiceEndpoints = builder.Configuration.GetSection("ServiceEndpoints").Get<ServiceEndpoints>();
+});
+
+// Register SQL Server resilience policy
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+builder.Services.AddSingleton(SqlServerResiliencePolicies.GetCombinedAsyncPolicy(logger));
 
 // Add HTTP client factory
 builder.Services.AddHttpClient();
@@ -112,7 +126,19 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Register services
-builder.Services.AddScoped<IUserRepository, MockUserRepository>();
+// Use DatabaseUserRepository if SQL Server connection string is configured, otherwise use MockUserRepository
+var connectionString = builder.Configuration.GetConnectionString("SqlServer");
+if (!string.IsNullOrEmpty(connectionString))
+{
+    builder.Services.AddScoped<IUserRepository, DatabaseUserRepository>();
+    builder.Logger.LogInformation("Using DatabaseUserRepository with SQL Server");
+}
+else
+{
+    builder.Services.AddScoped<IUserRepository, MockUserRepository>();
+    builder.Logger.LogInformation("Using MockUserRepository");
+}
+
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
