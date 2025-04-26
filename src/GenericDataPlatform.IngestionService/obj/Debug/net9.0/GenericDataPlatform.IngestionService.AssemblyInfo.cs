@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.IngestionService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a27b63e8f4d26d704b9c7552be91261357f2eb16")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2b2069098cd6d508c958f0ac660ffbc05b674a71")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.IngestionService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.IngestionService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
