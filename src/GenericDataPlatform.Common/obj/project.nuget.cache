@@ -1,8 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "/tHIW625F3g=",
-  "success": true,
+  "dgSpecHash": "OsFGY7F3Q58=",
+  "success": false,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.Common\\GenericDataPlatform.Common.csproj",
   "expectedPackageFiles": [],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1008",
+      "level": "Error",
+      "message": "Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: Microsoft.AspNetCore.Http.Abstractions;Microsoft.AspNetCore.Hosting.Abstractions;Microsoft.AspNetCore.Builder;Microsoft.AspNetCore.Diagnostics.HealthChecks;Microsoft.AspNetCore.Hosting;Microsoft.AspNetCore.Server.Kestrel;Grpc.AspNetCore."
+    }
+  ]
 }

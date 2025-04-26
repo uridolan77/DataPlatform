@@ -5,19 +5,61 @@ option csharp_namespace = "GenericDataPlatform.Protos";
 package storage;
 
 service StorageService {
-  rpc UploadFile (stream UploadFileRequest) returns (UploadFileResponse);
+  rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
+  rpc UploadFile (UploadFileRequest) returns (UploadFileResponse);
+  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
+  rpc GetStorageStatistics (GetStorageStatisticsRequest) returns (StorageStatistics);
   rpc DownloadFile (DownloadFileRequest) returns (stream DownloadFileResponse);
   rpc GetMetadata (GetMetadataRequest) returns (StorageMetadata);
-  rpc ListFiles (ListFilesRequest) returns (ListFilesResponse);
-  rpc DeleteFile (DeleteFileRequest) returns (DeleteFileResponse);
   rpc CopyFile (CopyFileRequest) returns (CopyFileResponse);
-  rpc GetStatistics (GetStatisticsRequest) returns (StorageStatistics);
+}
+
+message StorageMetadata {
+  string id = 1;
+  string source_id = 2;
+  string content_type = 3;
+  string filename = 4;
+  int64 size = 5;
+  string created_at = 6;
+  string checksum = 7;
+  string storage_tier = 8;
+  bool is_compressed = 9;
+  bool is_encrypted = 10;
+  map<string, string> custom_metadata = 11;
+  string path = 12;
+  string created_by = 13;
+  string name = 14;
+  string contentType = 15;
+}
+
+message ListFilesRequest {
+  string path = 1;
+  bool recursive = 2;
+  string prefix = 3;
+  int32 max_results = 4;
+  string continuation_token = 5;
+}
+
+message ListFilesResponse {
+  repeated StorageMetadata files = 1;
+  repeated StorageItem items = 2;
+  string continuation_token = 3;
+}
+
+message StorageItem {
+  string path = 1;
+  bool is_directory = 2;
+  StorageMetadata metadata = 3;
 }
 
 message UploadFileRequest {
+  string name = 1;
+  string contentType = 2;
+  bytes content = 3;
+  string path = 4;
   oneof request {
-    FileMetadata metadata = 1;
-    bytes chunk_data = 2;
+    FileMetadata metadata = 5;
+    bytes chunk_data = 6;
   }
 }
 
@@ -33,9 +75,11 @@ message FileMetadata {
 }
 
 message UploadFileResponse {
-  string file_id = 1;
-  string path = 2;
-  string checksum = 3;
+  StorageMetadata metadata = 1;
+  string message = 2;
+  string file_id = 3;
+  string path = 4;
+  string checksum = 5;
 }
 
 message DownloadFileRequest {
@@ -56,40 +100,9 @@ message GetMetadataRequest {
   string path = 1;
 }
 
-message ListFilesRequest {
-  string prefix = 1;
-  bool recursive = 2;
-  int32 max_results = 3;
-  string continuation_token = 4;
-}
-
-message ListFilesResponse {
-  repeated StorageItem items = 1;
-  string continuation_token = 2;
-}
-
-message StorageItem {
-  string path = 1;
-  bool is_directory = 2;
-  StorageMetadata metadata = 3;
-}
-
-message StorageMetadata {
-  string id = 1;
-  string source_id = 2;
-  string content_type = 3;
-  string filename = 4;
-  int64 size = 5;
-  string created_at = 6;
-  string checksum = 7;
-  string storage_tier = 8;
-  bool is_compressed = 9;
-  bool is_encrypted = 10;
-  map<string, string> custom_metadata = 11;
-}
-
 message DeleteFileRequest {
-  string path = 1;
+  string id = 1;
+  string path = 2;
 }
 
 message DeleteFileResponse {
@@ -106,13 +119,17 @@ message CopyFileResponse {
   string destination_path = 1;
 }
 
-message GetStatisticsRequest {
+message GetStorageStatisticsRequest {
   string prefix = 1;
 }
 
 message StorageStatistics {
-  int64 total_items = 1;
-  int64 total_size = 2;
-  map<string, int64> items_by_type = 3;
-  map<string, int64> size_by_type = 4;
+  int64 totalFiles = 1;
+  int64 totalSize = 2;
+  map<string, int64> fileCountByType = 3;
+  map<string, int64> fileSizeByType = 4;
+  int64 total_items = 5;
+  int64 total_size = 6;
+  map<string, int64> items_by_type = 7;
+  map<string, int64> size_by_type = 8;
 }

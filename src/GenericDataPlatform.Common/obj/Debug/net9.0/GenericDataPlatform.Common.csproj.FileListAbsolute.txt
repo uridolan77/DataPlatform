@@ -10,3 +10,4 @@ C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\refint\Gener
 C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\GenericDataPlatform.Common.pdb
 C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\ref\GenericDataPlatform.Common.dll
 C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\GenericDataPlatform.Common.sourcelink.json
+c:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\GenericDataPlatform.Common.csproj.AssemblyReference.cache
