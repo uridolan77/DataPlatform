@@ -41,45 +41,45 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                 {
                     filePattern = "*.*"; // Default to all files
                 }
-                
+
                 // Get file format
                 if (!source.ConnectionProperties.TryGetValue("format", out var format))
                 {
                     // Try to infer format from file extension
                     format = InferFormatFromPattern(filePattern);
                 }
-                
+
                 // List files
                 var files = await ListFilesAsync(source, filePattern);
-                
+
                 // Check if we need to limit the number of files
-                if (parameters != null && parameters.TryGetValue("maxFiles", out var maxFilesObj) && 
+                if (parameters != null && parameters.TryGetValue("maxFiles", out var maxFilesObj) &&
                     int.TryParse(maxFilesObj.ToString(), out var maxFiles) && maxFiles > 0)
                 {
                     files = files.Take(maxFiles).ToList();
                 }
-                
+
                 // Process each file
                 var allRecords = new List<DataRecord>();
-                
+
                 foreach (var file in files)
                 {
                     // Read file content
                     using var stream = await ReadFileAsync(source, file);
-                    
+
                     // Parse file based on format
                     var records = await ParseFileAsync(stream, format, source);
-                    
+
                     // Add file metadata to each record
                     foreach (var record in records)
                     {
                         record.Metadata["fileName"] = file;
                         record.Metadata["fileFormat"] = format;
-                        
+
                         allRecords.Add(record);
                     }
                 }
-                
+
                 return allRecords;
             }
             catch (Exception ex)
@@ -105,31 +105,31 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                 {
                     filePattern = "*.*"; // Default to all files
                 }
-                
+
                 // Get file format
                 if (!source.ConnectionProperties.TryGetValue("format", out var format))
                 {
                     // Try to infer format from file extension
                     format = InferFormatFromPattern(filePattern);
                 }
-                
+
                 // List files
                 var files = await ListFilesAsync(source, filePattern);
-                
+
                 if (!files.Any())
                 {
                     throw new InvalidOperationException("No files found to infer schema");
                 }
-                
+
                 // Get the first file
                 var firstFile = files.First();
-                
+
                 // Read file content
                 using var stream = await ReadFileAsync(source, firstFile);
-                
+
                 // Parse a sample of the file to infer schema
                 var sampleRecords = await ParseFileAsync(stream, format, source, sampleSize: 10);
-                
+
                 // Infer schema from the sample records
                 return InferSchemaFromSample(sampleRecords, source);
             }
@@ -161,13 +161,13 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
         }
 
         protected abstract Task<IEnumerable<string>> ListFilesAsync(DataSourceDefinition source, string filePattern);
-        
+
         protected abstract Task<Stream> ReadFileAsync(DataSourceDefinition source, string filePath);
-        
+
         protected virtual string InferFormatFromPattern(string filePattern)
         {
             var extension = Path.GetExtension(filePattern).ToLowerInvariant();
-            
+
             switch (extension)
             {
                 case ".csv":
@@ -186,7 +186,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     return "binary";
             }
         }
-        
+
         protected virtual async Task<IEnumerable<DataRecord>> ParseFileAsync(Stream stream, string format, DataSourceDefinition source, int sampleSize = 0)
         {
             switch (format.ToLowerInvariant())
@@ -203,29 +203,29 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     throw new NotSupportedException($"File format {format} is not supported");
             }
         }
-        
+
         protected virtual async Task<IEnumerable<DataRecord>> ParseCsvAsync(Stream stream, DataSourceDefinition source, int sampleSize = 0)
         {
             var records = new List<DataRecord>();
-            
+
             // Reset stream position
             stream.Position = 0;
-            
+
             // Read the stream
             using var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true);
-            
+
             // Check if the CSV has a header
-            bool hasHeader = source.ConnectionProperties.TryGetValue("hasHeader", out var hasHeaderStr) && 
+            bool hasHeader = source.ConnectionProperties.TryGetValue("hasHeader", out var hasHeaderStr) &&
                 bool.TryParse(hasHeaderStr, out var hasHeaderBool) && hasHeaderBool;
-            
+
             // Get delimiter
-            char delimiter = source.ConnectionProperties.TryGetValue("delimiter", out var delimiterStr) ? 
+            char delimiter = source.ConnectionProperties.TryGetValue("delimiter", out var delimiterStr) ?
                 delimiterStr[0] : ',';
-            
+
             // Read header
             string[] headers = null;
             string line = await reader.ReadLineAsync();
-            
+
             if (line != null)
             {
                 if (hasHeader)
@@ -240,19 +240,19 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     headers = Enumerable.Range(1, columnCount).Select(i => $"Column{i}").ToArray();
                 }
             }
-            
+
             // Read data rows
             int rowCount = 0;
             while (line != null && (sampleSize == 0 || rowCount < sampleSize))
             {
                 var values = line.Split(delimiter);
                 var data = new Dictionary<string, object>();
-                
+
                 for (int i = 0; i < Math.Min(headers.Length, values.Length); i++)
                 {
                     data[headers[i]] = values[i];
                 }
-                
+
                 // Create a record
                 var record = new DataRecord
                 {
@@ -270,31 +270,31 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     UpdatedAt = DateTime.UtcNow,
                     Version = "1.0"
                 };
-                
+
                 records.Add(record);
                 rowCount++;
-                
+
                 line = await reader.ReadLineAsync();
             }
-            
+
             return records;
         }
-        
+
         protected virtual async Task<IEnumerable<DataRecord>> ParseJsonAsync(Stream stream, DataSourceDefinition source, int sampleSize = 0)
         {
             var records = new List<DataRecord>();
-            
+
             // Reset stream position
             stream.Position = 0;
-            
+
             // Read the stream
             using var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true);
             var json = await reader.ReadToEndAsync();
-            
+
             // Parse JSON
             using var jsonDoc = JsonDocument.Parse(json);
             var root = jsonDoc.RootElement;
-            
+
             // Check if the root is an array
             if (root.ValueKind == JsonValueKind.Array)
             {
@@ -306,9 +306,9 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     {
                         break;
                     }
-                    
+
                     var data = new Dictionary<string, object>();
-                    
+
                     // Process properties
                     foreach (var property in element.EnumerateObject())
                     {
@@ -317,7 +317,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                             case JsonValueKind.String:
                                 data[property.Name] = property.Value.GetString();
                                 break;
-                            
+
                             case JsonValueKind.Number:
                                 if (property.Value.TryGetInt64(out var intValue))
                                 {
@@ -328,19 +328,19 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                                     data[property.Name] = doubleValue;
                                 }
                                 break;
-                            
+
                             case JsonValueKind.True:
                                 data[property.Name] = true;
                                 break;
-                            
+
                             case JsonValueKind.False:
                                 data[property.Name] = false;
                                 break;
-                            
+
                             case JsonValueKind.Null:
                                 data[property.Name] = null;
                                 break;
-                            
+
                             case JsonValueKind.Object:
                             case JsonValueKind.Array:
                                 // For complex types, store the JSON string
@@ -348,7 +348,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                                 break;
                         }
                     }
-                    
+
                     // Create a record
                     var record = new DataRecord
                     {
@@ -366,7 +366,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                         UpdatedAt = DateTime.UtcNow,
                         Version = "1.0"
                     };
-                    
+
                     records.Add(record);
                     count++;
                 }
@@ -375,7 +375,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
             {
                 // Process the object as a single record
                 var data = new Dictionary<string, object>();
-                
+
                 // Process properties
                 foreach (var property in root.EnumerateObject())
                 {
@@ -384,7 +384,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                         case JsonValueKind.String:
                             data[property.Name] = property.Value.GetString();
                             break;
-                        
+
                         case JsonValueKind.Number:
                             if (property.Value.TryGetInt64(out var intValue))
                             {
@@ -395,19 +395,19 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                                 data[property.Name] = doubleValue;
                             }
                             break;
-                        
+
                         case JsonValueKind.True:
                             data[property.Name] = true;
                             break;
-                        
+
                         case JsonValueKind.False:
                             data[property.Name] = false;
                             break;
-                        
+
                         case JsonValueKind.Null:
                             data[property.Name] = null;
                             break;
-                        
+
                         case JsonValueKind.Object:
                         case JsonValueKind.Array:
                             // For complex types, store the JSON string
@@ -415,7 +415,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                             break;
                     }
                 }
-                
+
                 // Create a record
                 var record = new DataRecord
                 {
@@ -432,47 +432,294 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     UpdatedAt = DateTime.UtcNow,
                     Version = "1.0"
                 };
-                
+
                 records.Add(record);
             }
-            
+
             return records;
         }
-        
+
         protected virtual async Task<IEnumerable<DataRecord>> ParseXmlAsync(Stream stream, DataSourceDefinition source, int sampleSize = 0)
         {
-            // For simplicity, we'll just return a placeholder implementation
-            // In a real implementation, you would use XmlReader to parse the XML
-            return await Task.FromResult(new List<DataRecord>());
+            var records = new List<DataRecord>();
+
+            // Reset stream position
+            stream.Position = 0;
+
+            try
+            {
+                // Load the XML document
+                var xmlDoc = new System.Xml.XmlDocument();
+                xmlDoc.Load(stream);
+
+                // Get the root element
+                var root = xmlDoc.DocumentElement;
+                if (root == null)
+                {
+                    return records;
+                }
+
+                // Get the record element name
+                string recordElementName = source.ConnectionProperties.TryGetValue("recordElement", out var recordElement) ?
+                    recordElement : null;
+
+                // If record element is specified, find all matching elements
+                if (!string.IsNullOrEmpty(recordElementName))
+                {
+                    var recordNodes = root.GetElementsByTagName(recordElementName);
+                    int count = 0;
+
+                    foreach (System.Xml.XmlNode node in recordNodes)
+                    {
+                        if (sampleSize > 0 && count >= sampleSize)
+                        {
+                            break;
+                        }
+
+                        var data = ExtractDataFromXmlNode(node);
+
+                        // Create a record
+                        var record = new DataRecord
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SchemaId = source.Schema?.Id,
+                            SourceId = source.Id,
+                            Data = data,
+                            Metadata = new Dictionary<string, string>
+                            {
+                                ["source"] = "FileSystem",
+                                ["format"] = "XML",
+                                ["index"] = count.ToString()
+                            },
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow,
+                            Version = "1.0"
+                        };
+
+                        records.Add(record);
+                        count++;
+                    }
+                }
+                else
+                {
+                    // Try to find repeating child elements under the root
+                    var childElements = root.ChildNodes.OfType<System.Xml.XmlElement>().ToList();
+
+                    if (childElements.Count > 0)
+                    {
+                        // Group by element name to find the most common
+                        var groupedByName = childElements.GroupBy(e => e.Name)
+                            .OrderByDescending(g => g.Count())
+                            .First();
+
+                        // If there are multiple elements with the same name, treat them as records
+                        if (groupedByName.Count() > 1)
+                        {
+                            int count = 0;
+                            foreach (var element in groupedByName)
+                            {
+                                if (sampleSize > 0 && count >= sampleSize)
+                                {
+                                    break;
+                                }
+
+                                var data = ExtractDataFromXmlNode(element);
+
+                                // Create a record
+                                var record = new DataRecord
+                                {
+                                    Id = Guid.NewGuid().ToString(),
+                                    SchemaId = source.Schema?.Id,
+                                    SourceId = source.Id,
+                                    Data = data,
+                                    Metadata = new Dictionary<string, string>
+                                    {
+                                        ["source"] = "FileSystem",
+                                        ["format"] = "XML",
+                                        ["index"] = count.ToString()
+                                    },
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow,
+                                    Version = "1.0"
+                                };
+
+                                records.Add(record);
+                                count++;
+                            }
+                        }
+                        else
+                        {
+                            // Treat the root element as a single record
+                            var data = ExtractDataFromXmlNode(root);
+
+                            // Create a record
+                            var record = new DataRecord
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                SchemaId = source.Schema?.Id,
+                                SourceId = source.Id,
+                                Data = data,
+                                Metadata = new Dictionary<string, string>
+                                {
+                                    ["source"] = "FileSystem",
+                                    ["format"] = "XML"
+                                },
+                                CreatedAt = DateTime.UtcNow,
+                                UpdatedAt = DateTime.UtcNow,
+                                Version = "1.0"
+                            };
+
+                            records.Add(record);
+                        }
+                    }
+                    else
+                    {
+                        // Treat the root element as a single record
+                        var data = ExtractDataFromXmlNode(root);
+
+                        // Create a record
+                        var record = new DataRecord
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            SchemaId = source.Schema?.Id,
+                            SourceId = source.Id,
+                            Data = data,
+                            Metadata = new Dictionary<string, string>
+                            {
+                                ["source"] = "FileSystem",
+                                ["format"] = "XML"
+                            },
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow,
+                            Version = "1.0"
+                        };
+
+                        records.Add(record);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(ex, "Error parsing XML file");
+            }
+
+            return await Task.FromResult(records);
         }
-        
+
+        private Dictionary<string, object> ExtractDataFromXmlNode(System.Xml.XmlNode node)
+        {
+            var data = new Dictionary<string, object>();
+
+            // Extract attributes
+            if (node.Attributes != null)
+            {
+                foreach (System.Xml.XmlAttribute attr in node.Attributes)
+                {
+                    data[$"@{attr.Name}"] = attr.Value;
+                }
+            }
+
+            // Extract child elements
+            foreach (System.Xml.XmlNode childNode in node.ChildNodes)
+            {
+                if (childNode is System.Xml.XmlElement childElement)
+                {
+                    // Check if this element has child elements
+                    var hasChildElements = childElement.ChildNodes.OfType<System.Xml.XmlElement>().Any();
+
+                    if (hasChildElements)
+                    {
+                        // Complex element, extract recursively
+                        var childData = ExtractDataFromXmlNode(childElement);
+
+                        // Check if we already have this element name
+                        if (data.ContainsKey(childElement.Name))
+                        {
+                            // Convert to array if not already
+                            if (data[childElement.Name] is List<Dictionary<string, object>> list)
+                            {
+                                list.Add(childData);
+                            }
+                            else if (data[childElement.Name] is Dictionary<string, object> dict)
+                            {
+                                data[childElement.Name] = new List<Dictionary<string, object>> { dict, childData };
+                            }
+                            else
+                            {
+                                // Unexpected type, overwrite
+                                data[childElement.Name] = childData;
+                            }
+                        }
+                        else
+                        {
+                            data[childElement.Name] = childData;
+                        }
+                    }
+                    else
+                    {
+                        // Simple element, extract text value
+                        var value = childElement.InnerText;
+
+                        // Try to parse the value
+                        if (int.TryParse(value, out var intValue))
+                        {
+                            data[childElement.Name] = intValue;
+                        }
+                        else if (double.TryParse(value, out var doubleValue))
+                        {
+                            data[childElement.Name] = doubleValue;
+                        }
+                        else if (bool.TryParse(value, out var boolValue))
+                        {
+                            data[childElement.Name] = boolValue;
+                        }
+                        else if (DateTime.TryParse(value, out var dateValue))
+                        {
+                            data[childElement.Name] = dateValue;
+                        }
+                        else
+                        {
+                            data[childElement.Name] = value;
+                        }
+                    }
+                }
+                else if (childNode is System.Xml.XmlText textNode && node.ChildNodes.Count == 1)
+                {
+                    // If this node has only a text child, store the text value
+                    data["_value"] = textNode.Value;
+                }
+            }
+
+            return data;
+        }
+
         protected virtual async Task<IEnumerable<DataRecord>> ParseTextAsync(Stream stream, DataSourceDefinition source, int sampleSize = 0)
         {
             var records = new List<DataRecord>();
-            
+
             // Reset stream position
             stream.Position = 0;
-            
+
             // Read the stream
             using var reader = new StreamReader(stream, Encoding.UTF8, true, 1024, true);
-            
+
             // Check if we should treat each line as a record
-            bool lineByLine = source.ConnectionProperties.TryGetValue("lineByLine", out var lineByLineStr) && 
+            bool lineByLine = source.ConnectionProperties.TryGetValue("lineByLine", out var lineByLineStr) &&
                 bool.TryParse(lineByLineStr, out var lineByLineBool) && lineByLineBool;
-            
+
             if (lineByLine)
             {
                 // Read line by line
                 int lineNumber = 0;
                 string line;
-                
+
                 while ((line = await reader.ReadLineAsync()) != null && (sampleSize == 0 || lineNumber < sampleSize))
                 {
                     var data = new Dictionary<string, object>
                     {
                         ["text"] = line
                     };
-                    
+
                     // Create a record
                     var record = new DataRecord
                     {
@@ -490,7 +737,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                         UpdatedAt = DateTime.UtcNow,
                         Version = "1.0"
                     };
-                    
+
                     records.Add(record);
                     lineNumber++;
                 }
@@ -499,12 +746,12 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
             {
                 // Read the entire file as a single record
                 var text = await reader.ReadToEndAsync();
-                
+
                 var data = new Dictionary<string, object>
                 {
                     ["text"] = text
                 };
-                
+
                 // Create a record
                 var record = new DataRecord
                 {
@@ -521,13 +768,13 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     UpdatedAt = DateTime.UtcNow,
                     Version = "1.0"
                 };
-                
+
                 records.Add(record);
             }
-            
+
             return records;
         }
-        
+
         protected virtual DataSchema InferSchemaFromSample(IEnumerable<DataRecord> sampleData, DataSourceDefinition source)
         {
             if (sampleData == null || !sampleData.Any())
@@ -543,7 +790,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     UpdatedAt = DateTime.UtcNow
                 };
             }
-            
+
             var schema = new DataSchema
             {
                 Id = Guid.NewGuid().ToString(),
@@ -554,7 +801,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            
+
             // Get all unique field names from the sample data
             var fieldNames = new HashSet<string>();
             foreach (var record in sampleData)
@@ -564,7 +811,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     fieldNames.Add(key);
                 }
             }
-            
+
             // For each field, determine its type and other properties
             foreach (var fieldName in fieldNames)
             {
@@ -579,28 +826,28 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     Validation = new ValidationRules(),
                     NestedFields = new List<SchemaField>()
                 };
-                
+
                 schema.Fields.Add(field);
             }
-            
+
             return schema;
         }
-        
+
         protected virtual bool IsFieldRequired(string fieldName, IEnumerable<DataRecord> sampleData)
         {
             // A field is required if it's present in all records and never null
             return sampleData.All(r => r.Data.ContainsKey(fieldName) && r.Data[fieldName] != null);
         }
-        
+
         protected virtual bool IsFieldArray(string fieldName, IEnumerable<DataRecord> sampleData)
         {
             // Check if any value for this field is an array
-            return sampleData.Any(r => 
-                r.Data.ContainsKey(fieldName) && 
-                r.Data[fieldName] != null && 
+            return sampleData.Any(r =>
+                r.Data.ContainsKey(fieldName) &&
+                r.Data[fieldName] != null &&
                 r.Data[fieldName].GetType().IsArray);
         }
-        
+
         protected virtual FieldType InferFieldType(string fieldName, IEnumerable<DataRecord> sampleData)
         {
             // Get non-null values for this field
@@ -608,15 +855,15 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                 .Where(r => r.Data.ContainsKey(fieldName) && r.Data[fieldName] != null)
                 .Select(r => r.Data[fieldName])
                 .ToList();
-            
+
             if (values.Count == 0)
             {
                 return FieldType.String; // Default to string if no values
             }
-            
+
             // Check if all values are of the same type
             var firstType = values[0].GetType();
-            
+
             if (values.All(v => v.GetType() == firstType))
             {
                 // All values are of the same type
@@ -651,7 +898,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     {
                         var jsonString = values[0].ToString();
                         var jsonDoc = JsonDocument.Parse(jsonString);
-                        
+
                         if (jsonDoc.RootElement.ValueKind == JsonValueKind.Object)
                         {
                             return FieldType.Json;
@@ -665,7 +912,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                     {
                         // Not JSON
                     }
-                    
+
                     return FieldType.Complex;
                 }
             }
@@ -675,7 +922,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.FileSystem
                 return FieldType.String;
             }
         }
-        
+
         protected virtual void LogError(Exception ex, string message, params object[] args)
         {
             _logger.LogError(ex, message, args);
