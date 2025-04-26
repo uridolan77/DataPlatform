@@ -10,10 +10,11 @@
 using System;
 using System.Reflection;
 
+[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("GenericDataPlatform-ETL-9A8B7C6D-5E4F-3A2B-1C0D-9E8F7A6B5C4D")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.ETL")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cb42a48258a7e550151f49d6e4dfe990051dfc17")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a3846db04abaf4aacc97408ba2d2f27ae0412603")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.ETL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.ETL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

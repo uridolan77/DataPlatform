@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using GenericDataPlatform.Common.Configuration;
 using GenericDataPlatform.Common.Resilience;
 using GenericDataPlatform.ETL.Enrichers;
 using GenericDataPlatform.ETL.Extractors.Base;
@@ -16,7 +17,9 @@ using GenericDataPlatform.ETL.Transformers.Xml;
 using GenericDataPlatform.ETL.Validators;
 using GenericDataPlatform.ETL.Workflows;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
+using GenericDataPlatform.ETL.Workflows.Repositories;
 using GenericDataPlatform.ETL.Workflows.StepProcessors;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Polly;
@@ -24,9 +27,18 @@ using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure user secrets in development environment
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Register configuration service
+builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 
 // Add OpenAPI/Swagger
 builder.Services.AddSwaggerGen(c =>
@@ -85,6 +97,15 @@ builder.Services.AddScoped<IPipelineProcessor>(sp => new PipelineProcessor(
     sp.GetRequiredService<ILogger<PipelineProcessor>>()
 ));
 
+// Register workflow options
+builder.Services.Configure<WorkflowOptions>(builder.Configuration.GetSection("WorkflowOptions"));
+
+// Register workflow repositories
+builder.Services.AddSingleton<IWorkflowRepository, DatabaseWorkflowRepository>();
+
+// Register workflow monitoring
+builder.Services.AddSingleton<IWorkflowMonitor, Workflows.Monitoring.WorkflowMonitor>();
+
 // Workflow engine components
 builder.Services.AddScoped<IWorkflowEngine, WorkflowEngine>();
 builder.Services.AddScoped<IWorkflowStepProcessor, ExtractStepProcessor>();
@@ -93,6 +114,7 @@ builder.Services.AddScoped<IWorkflowStepProcessor, ValidateStepProcessor>();
 builder.Services.AddScoped<IWorkflowStepProcessor, EnrichStepProcessor>();
 builder.Services.AddScoped<IWorkflowStepProcessor, LoadStepProcessor>();
 builder.Services.AddScoped<IWorkflowStepProcessor, BranchStepProcessor>();
+builder.Services.AddScoped<IWorkflowStepProcessor, CustomStepProcessor>();
 
 var app = builder.Build();
 
