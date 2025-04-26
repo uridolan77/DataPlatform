@@ -9,3 +9,4 @@ C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\GenericDataP
 C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\refint\GenericDataPlatform.Common.dll
 C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\GenericDataPlatform.Common.pdb
 C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\ref\GenericDataPlatform.Common.dll
+C:\dev\DataPlatform\src\GenericDataPlatform.Common\obj\Debug\net9.0\GenericDataPlatform.Common.sourcelink.json
