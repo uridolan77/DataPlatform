@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d3f1a8334716c4da36c3899ce219c2926d549f7a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b7e4fe1fde0e8b15c54affc3811fe9f27724e80")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
