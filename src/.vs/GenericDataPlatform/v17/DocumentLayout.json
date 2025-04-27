@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\dev\\DataPlatform\\src\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9B181F65-66BA-4B88-9E7D-D9B7B3CDE313}|GenericDataPlatform.ETL\\GenericDataPlatform.ETL.csproj|c:\\dev\\dataplatform\\src\\genericdataplatform.etl\\elsaworkflows\\sampleworkflows\\sampledatapipeline.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9B181F65-66BA-4B88-9E7D-D9B7B3CDE313}|GenericDataPlatform.ETL\\GenericDataPlatform.ETL.csproj|solutionrelative:genericdataplatform.etl\\elsaworkflows\\sampleworkflows\\sampledatapipeline.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B57AFB84-34CE-4435-9B18-02223487F4D7}|GenericDataPlatform.Common\\GenericDataPlatform.Common.csproj|c:\\dev\\dataplatform\\src\\genericdataplatform.common\\clients\\resilientstorageserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B57AFB84-34CE-4435-9B18-02223487F4D7}|GenericDataPlatform.Common\\GenericDataPlatform.Common.csproj|solutionrelative:genericdataplatform.common\\clients\\resilientstorageserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -19,6 +23,23 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "SampleDataPipeline.cs",
+              "DocumentMoniker": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.ETL\\ElsaWorkflows\\SampleWorkflows\\SampleDataPipeline.cs",
+              "RelativeDocumentMoniker": "GenericDataPlatform.ETL\\ElsaWorkflows\\SampleWorkflows\\SampleDataPipeline.cs",
+              "ToolTip": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.ETL\\ElsaWorkflows\\SampleWorkflows\\SampleDataPipeline.cs",
+              "RelativeToolTip": "GenericDataPlatform.ETL\\ElsaWorkflows\\SampleWorkflows\\SampleDataPipeline.cs",
+              "ViewState": "AgIAAIYAAAAAAAAAAIAwwJsAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-27T05:05:59.885Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "ResilientStorageServiceClient.cs",
               "DocumentMoniker": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.Common\\Clients\\ResilientStorageServiceClient.cs",
               "RelativeDocumentMoniker": "GenericDataPlatform.Common\\Clients\\ResilientStorageServiceClient.cs",
@@ -28,10 +49,6 @@
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-26T22:27:08.683Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             }
           ]
         }

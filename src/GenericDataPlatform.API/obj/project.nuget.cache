@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "v0sVj0tNEUM=",
+  "dgSpecHash": "Low2Nfswlzo=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.API\\GenericDataPlatform.API.csproj",
   "expectedPackageFiles": [
@@ -19,7 +19,7 @@
     "C:\\Users\\urido\\.nuget\\packages\\bouncycastle.cryptography\\2.2.1\\bouncycastle.cryptography.2.2.1.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\confluent.kafka\\2.3.0\\confluent.kafka.2.3.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\dapper\\2.1.28\\dapper.2.1.28.nupkg.sha512",
-    "C:\\Users\\urido\\.nuget\\packages\\google.protobuf\\3.25.1\\google.protobuf.3.25.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\google.protobuf\\3.27.1\\google.protobuf.3.27.1.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore\\2.59.0\\grpc.aspnetcore.2.59.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore.server\\2.59.0\\grpc.aspnetcore.server.2.59.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore.server.clientfactory\\2.59.0\\grpc.aspnetcore.server.clientfactory.2.59.0.nupkg.sha512",

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "yMlGKnsuz1s=",
+  "dgSpecHash": "nKAbJaUhJDQ=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.StorageService\\GenericDataPlatform.StorageService.csproj",
   "expectedPackageFiles": [
@@ -17,7 +17,7 @@
     "C:\\Users\\urido\\.nuget\\packages\\azure.security.keyvault.secrets\\4.5.0\\azure.security.keyvault.secrets.4.5.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\bouncycastle.cryptography\\2.2.1\\bouncycastle.cryptography.2.2.1.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\confluent.kafka\\2.3.0\\confluent.kafka.2.3.0.nupkg.sha512",
-    "C:\\Users\\urido\\.nuget\\packages\\google.protobuf\\3.25.1\\google.protobuf.3.25.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\google.protobuf\\3.27.1\\google.protobuf.3.27.1.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore\\2.59.0\\grpc.aspnetcore.2.59.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore.server\\2.59.0\\grpc.aspnetcore.server.2.59.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore.server.clientfactory\\2.59.0\\grpc.aspnetcore.server.clientfactory.2.59.0.nupkg.sha512",

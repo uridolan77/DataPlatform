@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Polly;
+using GenericDataPlatform.DatabaseService;
 
 var builder = WebApplication.CreateBuilder(args);
 

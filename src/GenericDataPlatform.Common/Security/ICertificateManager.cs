@@ -28,5 +28,23 @@ namespace GenericDataPlatform.Common.Security
         /// <param name="subjectName">The subject name for the certificate</param>
         /// <returns>A self-signed certificate</returns>
         X509Certificate2 CreateSelfSignedCertificate(string subjectName);
+
+        /// <summary>
+        /// Gets the CA certificate
+        /// </summary>
+        /// <returns>The CA certificate</returns>
+        X509Certificate2 GetCACertificate();
+
+        /// <summary>
+        /// Gets the server certificate
+        /// </summary>
+        /// <returns>The server certificate</returns>
+        X509Certificate2 GetServerCertificate();
+
+        /// <summary>
+        /// Gets the client certificate
+        /// </summary>
+        /// <returns>The client certificate</returns>
+        X509Certificate2 GetClientCertificate();
     }
 }

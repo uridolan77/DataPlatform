@@ -1,0 +1,8 @@
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.csproj.AssemblyReference.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.AssemblyInfoInputs.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.AssemblyInfo.cs
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.csproj.CoreCompileInputs.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.MvcApplicationPartsAssemblyInfo.cs
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.MvcApplicationPartsAssemblyInfo.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.IngestionService\obj\Debug\net9.0\GenericDataPlatform.IngestionService.sourcelink.json

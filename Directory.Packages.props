@@ -41,7 +41,7 @@
     <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="8.0.0" />
     <!-- gRPC packages -->
-    <PackageVersion Include="Google.Protobuf" Version="3.25.1" />
+    <PackageVersion Include="Google.Protobuf" Version="3.27.1" />
     <PackageVersion Include="Grpc.Net.Client" Version="2.59.0" />
     <PackageVersion Include="Grpc.Net.ClientFactory" Version="2.59.0" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.59.0" />
@@ -91,7 +91,12 @@
     <!-- JSON packages -->
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <!-- ML packages -->
-    <PackageVersion Include="Microsoft.ML" Version="3.0.0" />
+    <PackageVersion Include="Microsoft.ML" Version="4.0.2" />
+    <PackageVersion Include="Microsoft.ML.AutoML" Version="0.22.2" />
+    <PackageVersion Include="Microsoft.ML.FastTree" Version="4.0.2" />
+    <PackageVersion Include="Microsoft.ML.LightGbm" Version="4.0.2" />
+    <PackageVersion Include="Microsoft.ML.Recommender" Version="0.22.2" />
+    <PackageVersion Include="Microsoft.ML.TimeSeries" Version="4.0.2" />
     <!-- ETL/Workflow packages -->
     <PackageVersion Include="Elsa" Version="1.5.5.1943" />
     <PackageVersion Include="Elsa.Activities.Console" Version="1.5.5.1943" />

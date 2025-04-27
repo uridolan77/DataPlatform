@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "5zhHl0s4kF8=",
+  "dgSpecHash": "JP+1tACiGvA=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.ETL\\GenericDataPlatform.ETL.csproj",
   "expectedPackageFiles": [
@@ -45,7 +45,7 @@
     "C:\\Users\\urido\\.nuget\\packages\\elsa.workflowdesigner\\1.5.5.1943\\elsa.workflowdesigner.1.5.5.1943.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\esprima\\2.0.0-beta-1328\\esprima.2.0.0-beta-1328.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\fluid.core\\1.0.0-beta-9693\\fluid.core.1.0.0-beta-9693.nupkg.sha512",
-    "C:\\Users\\urido\\.nuget\\packages\\google.protobuf\\3.25.1\\google.protobuf.3.25.1.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\google.protobuf\\3.27.1\\google.protobuf.3.27.1.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore\\2.59.0\\grpc.aspnetcore.2.59.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore.server\\2.59.0\\grpc.aspnetcore.server.2.59.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\grpc.aspnetcore.server.clientfactory\\2.59.0\\grpc.aspnetcore.server.clientfactory.2.59.0.nupkg.sha512",

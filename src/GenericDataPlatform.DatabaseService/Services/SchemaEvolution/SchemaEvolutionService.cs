@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using GenericDataPlatform.Common.Extensions;
 using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.DatabaseService.Services.SchemaEvolution.MigrationPlan;
 using Microsoft.Extensions.Logging;

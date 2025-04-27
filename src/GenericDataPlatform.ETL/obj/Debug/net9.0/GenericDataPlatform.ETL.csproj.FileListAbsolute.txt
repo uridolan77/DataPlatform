@@ -1,0 +1,10 @@
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.csproj.AssemblyReference.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.AssemblyInfoInputs.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.AssemblyInfo.cs
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.csproj.CoreCompileInputs.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.MvcApplicationPartsAssemblyInfo.cs
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.MvcApplicationPartsAssemblyInfo.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.RazorAssemblyInfo.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.RazorAssemblyInfo.cs
+C:\dev\DataPlatform\src\GenericDataPlatform.ETL\obj\Debug\net9.0\GenericDataPlatform.ETL.sourcelink.json

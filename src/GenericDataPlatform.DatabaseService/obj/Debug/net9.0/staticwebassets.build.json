@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "VWSwOTnJFzM6KCM2JHQ9jC6B+GQLJVoreWdc5YoR2no=",
+  "Source": "GenericDataPlatform.DatabaseService",
+  "BasePath": "_content/GenericDataPlatform.DatabaseService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

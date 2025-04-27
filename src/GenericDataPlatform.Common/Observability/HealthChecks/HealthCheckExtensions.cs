@@ -29,7 +29,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
             // Add health checks
             var healthChecks = services.AddHealthChecks()
                 .AddCheck("self", () => HealthCheckResult.Healthy(), new[] { "api" });
-            
+
             // Add SQL Server health check
             var sqlServerConnectionString = configuration.GetConnectionString("SqlServer");
             if (!string.IsNullOrEmpty(sqlServerConnectionString))
@@ -39,7 +39,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     name: "sql-server-check",
                     tags: new[] { "database", "sql-server" });
             }
-            
+
             // Add PostgreSQL health check
             var postgresConnectionString = configuration.GetConnectionString("Postgres");
             if (!string.IsNullOrEmpty(postgresConnectionString))
@@ -49,7 +49,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     name: "postgres-check",
                     tags: new[] { "database", "postgres" });
             }
-            
+
             // Add Redis health check
             var redisConnectionString = configuration.GetConnectionString("Redis");
             if (!string.IsNullOrEmpty(redisConnectionString))
@@ -59,7 +59,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     name: "redis-check",
                     tags: new[] { "cache", "redis" });
             }
-            
+
             // Add RabbitMQ health check
             var rabbitMqConnectionString = configuration.GetConnectionString("RabbitMQ");
             if (!string.IsNullOrEmpty(rabbitMqConnectionString))
@@ -69,7 +69,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     name: "rabbitmq-check",
                     tags: new[] { "messaging", "rabbitmq" });
             }
-            
+
             // Add Kafka health check
             var kafkaBootstrapServers = configuration["Kafka:BootstrapServers"];
             if (!string.IsNullOrEmpty(kafkaBootstrapServers))
@@ -79,7 +79,7 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     name: "kafka-check",
                     tags: new[] { "messaging", "kafka" });
             }
-            
+
             // Add URL health check for dependent services
             var serviceEndpoints = configuration.GetSection("ServiceEndpoints").GetChildren();
             foreach (var endpoint in serviceEndpoints)
@@ -93,20 +93,20 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                         tags: new[] { "service", endpoint.Key.ToLowerInvariant() });
                 }
             }
-            
+
             return services;
         }
-        
+
         /// <summary>
         /// Creates a RabbitMQ connection factory based on the connection string
         /// </summary>
         private static IConnection CreateRabbitMQConnection(string connectionString)
         {
             var factory = new ConnectionFactory { Uri = new Uri(connectionString) };
-            // Manual connection creation instead of using ConnectionFactory.CreateConnection()
-            return factory.CreateConnection(factory.EndpointResolverFactory(new[] { new AmqpTcpEndpoint(factory.Uri) }));
+            // In RabbitMQ.Client 7.0.0, we need to use the CreateConnectionAsync() method and wait for the result
+            return factory.CreateConnectionAsync().GetAwaiter().GetResult();
         }
-        
+
         /// <summary>
         /// Maps health check endpoints
         /// </summary>
@@ -125,12 +125,12 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                             new JProperty("description", entry.Value.Description),
                             new JProperty("data", JObject.FromObject(entry.Value.Data))
                         ))))));
-                    
+
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(result.ToString(Formatting.Indented));
                 }
             });
-            
+
             // Map liveness probe endpoint
             app.UseHealthChecks("/health/live", new HealthCheckOptions
             {
@@ -141,12 +141,12 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     {
                         status = report.Status.ToString()
                     });
-                    
+
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(result.ToString(Formatting.Indented));
                 }
             });
-            
+
             // Map readiness probe endpoint
             app.UseHealthChecks("/health/ready", new HealthCheckOptions
             {
@@ -157,12 +157,12 @@ namespace GenericDataPlatform.Common.Observability.HealthChecks
                     {
                         status = report.Status.ToString()
                     });
-                    
+
                     context.Response.ContentType = "application/json";
                     await context.Response.WriteAsync(result.ToString(Formatting.Indented));
                 }
             });
-            
+
             return app;
         }
     }

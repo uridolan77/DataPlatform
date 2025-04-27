@@ -153,7 +153,7 @@ namespace GenericDataPlatform.ETL.ElsaWorkflows.SampleWorkflows
                             {
                                 var validationResult = context.GetActivityOutput<ValidationResult>("Validate");
                                 return $"Validation failed with {validationResult?.Errors?.Count ?? 0} errors";
-                            }));
+                            })));
         }
     }
 }

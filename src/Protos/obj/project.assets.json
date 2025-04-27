@@ -2,7 +2,7 @@
   "version": 3,
   "targets": {
     "net9.0": {
-      "Google.Protobuf/3.25.1": {
+      "Google.Protobuf/3.27.1": {
         "type": "package",
         "compile": {
           "lib/net5.0/Google.Protobuf.dll": {
@@ -106,14 +106,14 @@
     }
   },
   "libraries": {
-    "Google.Protobuf/3.25.1": {
-      "sha512": "Sw9bq4hOD+AaS3RrnmP5IT25cyZ/T1qpM0e8+G+23Nojhv7+ScJFPEAQo1m4EFQWhXoI4FRZDrK+wjHCPw9yxg==",
+    "Google.Protobuf/3.27.1": {
+      "sha512": "7IVz9TzhYCZ8qY0rPhXUnyJSXYdshUqmmxmTI763XmDDSJJFnyfKH43FFcMJu/CZgBcE98xlFztrKwhzcRkiPg==",
       "type": "package",
-      "path": "google.protobuf/3.25.1",
+      "path": "google.protobuf/3.27.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "google.protobuf.3.25.1.nupkg.sha512",
+        "google.protobuf.3.27.1.nupkg.sha512",
         "google.protobuf.nuspec",
         "lib/net45/Google.Protobuf.dll",
         "lib/net45/Google.Protobuf.pdb",
@@ -362,7 +362,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
-      "Google.Protobuf >= 3.25.1",
+      "Google.Protobuf >= 3.27.1",
       "Grpc.Net.Client >= 2.59.0",
       "Grpc.Tools >= 2.59.0"
     ]
@@ -422,7 +422,7 @@
         "dependencies": {
           "Google.Protobuf": {
             "target": "Package",
-            "version": "[3.25.1, )",
+            "version": "[3.27.1, )",
             "versionCentrallyManaged": true
           },
           "Grpc.Net.Client": {
@@ -462,7 +462,7 @@
           "Elsa.Persistence.EntityFramework.SqlServer": "1.5.5.1943",
           "Elsa.Server.Api": "1.5.5.1943",
           "FluentAssertions": "6.12.0",
-          "Google.Protobuf": "3.25.1",
+          "Google.Protobuf": "3.27.1",
           "Grpc.AspNetCore": "2.59.0",
           "Grpc.Net.Client": "2.59.0",
           "Grpc.Net.ClientFactory": "2.59.0",
@@ -491,7 +491,12 @@
           "Microsoft.Extensions.Logging.Abstractions": "9.0.0",
           "Microsoft.Extensions.Options": "9.0.0",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "9.0.0",
-          "Microsoft.ML": "3.0.0",
+          "Microsoft.ML": "4.0.2",
+          "Microsoft.ML.AutoML": "0.22.2",
+          "Microsoft.ML.FastTree": "4.0.2",
+          "Microsoft.ML.LightGbm": "4.0.2",
+          "Microsoft.ML.Recommender": "0.22.2",
+          "Microsoft.ML.TimeSeries": "4.0.2",
           "Microsoft.NET.Test.Sdk": "17.9.0",
           "Moq": "4.20.70",
           "MySql.Data": "8.3.0",
