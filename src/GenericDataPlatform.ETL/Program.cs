@@ -102,7 +102,7 @@ builder.Services.AddSingleton<IAsyncPolicy>(SqlServerResiliencePolicies.GetCombi
 
 // Register workflow repositories and services
 builder.Services.AddScoped<IWorkflowRepository, InMemoryWorkflowRepository>();
-builder.Services.AddScoped<GenericDataPlatform.ETL.Workflows.Monitoring.IWorkflowMonitor, BasicMonitor>();
+builder.Services.AddScoped<IWorkflowMonitor, BasicMonitor>();
 builder.Services.AddScoped<IWorkflowEngine, SimpleWorkflowEngine>();
 builder.Services.AddScoped<IEtlWorkflowService, SimpleEtlWorkflowService>();
 builder.Services.AddScoped<IWorkflowDefinitionBuilder, SimpleWorkflowDefinitionBuilder>();

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.ETL.Enrichers;
 using GenericDataPlatform.ETL.Extractors.Base;
+using GenericDataPlatform.ETL.Loaders;
 using GenericDataPlatform.ETL.Loaders.Base;
 using GenericDataPlatform.ETL.Transformers.Base;
 using GenericDataPlatform.ETL.Validators;
@@ -497,21 +498,16 @@ namespace GenericDataPlatform.ETL.Processors
                 return loadResult.RecordsProcessed;
             }
 
-            if (stageOutput is ValidationResult validationResult)
+            if (stageOutput is Validators.ValidationResult validationResult)
             {
-                return validationResult.RecordsProcessed;
+                return validationResult.ValidRecords.Count + validationResult.InvalidRecords.Count;
             }
 
             return 1; // Default to 1 for unknown types
         }
     }
 
-    public class LoadResult
-    {
-        public long RecordsProcessed { get; set; }
-        public string DestinationId { get; set; }
-        public Dictionary<string, object> Metadata { get; set; }
-    }
+    // LoadResult class moved to GenericDataPlatform.ETL.Loaders.LoadResult
 
     public interface ICustomStageProcessor
     {

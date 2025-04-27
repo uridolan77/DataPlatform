@@ -11,14 +11,14 @@ namespace GenericDataPlatform.ETL.Validators
     public class SchemaValidator : IValidator
     {
         private readonly ILogger<SchemaValidator> _logger;
-        
+
         public string Type => "Schema";
-        
+
         public SchemaValidator(ILogger<SchemaValidator> logger)
         {
             _logger = logger;
         }
-        
+
         public async Task<ValidationResult> ValidateAsync(object input, Dictionary<string, object> configuration, DataSourceDefinition source)
         {
             try
@@ -28,26 +28,26 @@ namespace GenericDataPlatform.ETL.Validators
                 {
                     throw new ArgumentException("Input must be a list of DataRecord objects");
                 }
-                
+
                 var records = inputRecords.ToList();
-                
+
                 // Get validation options
-                var failOnError = configuration.TryGetValue("failOnError", out var failOnErrorObj) && 
+                var failOnError = configuration.TryGetValue("failOnError", out var failOnErrorObj) &&
                     failOnErrorObj is bool failOnErrorBool && failOnErrorBool;
-                
-                var maxErrors = configuration.TryGetValue("maxErrors", out var maxErrorsObj) && 
-                    int.TryParse(maxErrorsObj.ToString(), out var maxErrorsInt) ? 
+
+                var maxErrors = configuration.TryGetValue("maxErrors", out var maxErrorsObj) &&
+                    int.TryParse(maxErrorsObj.ToString(), out var maxErrorsInt) ?
                     maxErrorsInt : 100;
-                
+
                 // Get schema
                 DataSchema schema;
-                
+
                 if (configuration.TryGetValue("schema", out var schemaObj) && schemaObj is DataSchema configSchema)
                 {
                     schema = configSchema;
                 }
-                else if (configuration.TryGetValue("schemaId", out var schemaIdObj) && 
-                         schemaIdObj is string schemaId && 
+                else if (configuration.TryGetValue("schemaId", out var schemaIdObj) &&
+                         schemaIdObj is string schemaId &&
                          source.Schema?.Id == schemaId)
                 {
                     schema = source.Schema;
@@ -60,21 +60,21 @@ namespace GenericDataPlatform.ETL.Validators
                 {
                     throw new ArgumentException("Schema is required for validation");
                 }
-                
+
                 // Validate records against schema
                 var validRecords = new List<DataRecord>();
                 var invalidRecords = new List<DataRecord>();
                 var errors = new List<ValidationError>();
-                
+
                 foreach (var record in records)
                 {
                     var recordErrors = ValidateRecord(record, schema);
-                    
+
                     if (recordErrors.Any())
                     {
                         invalidRecords.Add(record);
                         errors.AddRange(recordErrors);
-                        
+
                         if (errors.Count >= maxErrors)
                         {
                             _logger.LogWarning("Maximum number of validation errors reached ({MaxErrors})", maxErrors);
@@ -86,7 +86,7 @@ namespace GenericDataPlatform.ETL.Validators
                         validRecords.Add(record);
                     }
                 }
-                
+
                 // Create validation result
                 var result = new ValidationResult
                 {
@@ -96,13 +96,13 @@ namespace GenericDataPlatform.ETL.Validators
                     Errors = errors,
                     ValidationTime = DateTime.UtcNow
                 };
-                
+
                 // If fail on error is enabled and there are errors, throw an exception
                 if (failOnError && !result.IsValid)
                 {
                     throw new ValidationException($"Validation failed with {errors.Count} errors", result);
                 }
-                
+
                 return await Task.FromResult(result);
             }
             catch (ValidationException)
@@ -116,11 +116,11 @@ namespace GenericDataPlatform.ETL.Validators
                 throw;
             }
         }
-        
+
         private List<ValidationError> ValidateRecord(DataRecord record, DataSchema schema)
         {
             var errors = new List<ValidationError>();
-            
+
             // Check each field in the schema
             foreach (var field in schema.Fields)
             {
@@ -138,10 +138,10 @@ namespace GenericDataPlatform.ETL.Validators
                             Message = $"Required field '{field.Name}' is missing"
                         });
                     }
-                    
+
                     continue;
                 }
-                
+
                 // Field exists, validate its value
                 if (value == null)
                 {
@@ -156,10 +156,10 @@ namespace GenericDataPlatform.ETL.Validators
                             Message = $"Required field '{field.Name}' has a null value"
                         });
                     }
-                    
+
                     continue;
                 }
-                
+
                 // Validate type
                 if (!IsTypeValid(value, field.Type))
                 {
@@ -170,10 +170,10 @@ namespace GenericDataPlatform.ETL.Validators
                         ErrorType = ValidationErrorType.TypeMismatch,
                         Message = $"Field '{field.Name}' has an invalid type. Expected {field.Type}, got {value.GetType().Name}"
                     });
-                    
+
                     continue;
                 }
-                
+
                 // Validate against validation rules
                 if (field.Validation != null)
                 {
@@ -190,7 +190,7 @@ namespace GenericDataPlatform.ETL.Validators
                                 Message = $"Field '{field.Name}' is too short. Minimum length is {field.Validation.MinLength.Value}, got {stringValue.Length}"
                             });
                         }
-                        
+
                         if (field.Validation.MaxLength.HasValue && stringValue.Length > field.Validation.MaxLength.Value)
                         {
                             errors.Add(new ValidationError
@@ -201,7 +201,7 @@ namespace GenericDataPlatform.ETL.Validators
                                 Message = $"Field '{field.Name}' is too long. Maximum length is {field.Validation.MaxLength.Value}, got {stringValue.Length}"
                             });
                         }
-                        
+
                         if (!string.IsNullOrEmpty(field.Validation.Pattern))
                         {
                             var regex = new Regex(field.Validation.Pattern);
@@ -217,34 +217,34 @@ namespace GenericDataPlatform.ETL.Validators
                             }
                         }
                     }
-                    
+
                     // Validate numeric range
-                    if ((field.Type == FieldType.Integer || field.Type == FieldType.Decimal) && 
+                    if ((field.Type == FieldType.Integer || field.Type == FieldType.Decimal) &&
                         double.TryParse(value.ToString(), out var numericValue))
                     {
-                        if (field.Validation.Minimum.HasValue && numericValue < field.Validation.Minimum.Value)
+                        if (field.Validation.MinValue.HasValue && numericValue < field.Validation.MinValue.Value)
                         {
                             errors.Add(new ValidationError
                             {
                                 RecordId = record.Id,
                                 FieldName = field.Name,
                                 ErrorType = ValidationErrorType.ValidationRuleViolation,
-                                Message = $"Field '{field.Name}' is too small. Minimum value is {field.Validation.Minimum.Value}, got {numericValue}"
+                                Message = $"Field '{field.Name}' is too small. Minimum value is {field.Validation.MinValue.Value}, got {numericValue}"
                             });
                         }
-                        
-                        if (field.Validation.Maximum.HasValue && numericValue > field.Validation.Maximum.Value)
+
+                        if (field.Validation.MaxValue.HasValue && numericValue > field.Validation.MaxValue.Value)
                         {
                             errors.Add(new ValidationError
                             {
                                 RecordId = record.Id,
                                 FieldName = field.Name,
                                 ErrorType = ValidationErrorType.ValidationRuleViolation,
-                                Message = $"Field '{field.Name}' is too large. Maximum value is {field.Validation.Maximum.Value}, got {numericValue}"
+                                Message = $"Field '{field.Name}' is too large. Maximum value is {field.Validation.MaxValue.Value}, got {numericValue}"
                             });
                         }
                     }
-                    
+
                     // Validate enum values
                     if (field.Validation.AllowedValues != null && field.Validation.AllowedValues.Any())
                     {
@@ -262,39 +262,39 @@ namespace GenericDataPlatform.ETL.Validators
                     }
                 }
             }
-            
+
             return errors;
         }
-        
+
         private bool IsTypeValid(object value, FieldType expectedType)
         {
             switch (expectedType)
             {
                 case FieldType.String:
                     return value is string;
-                
+
                 case FieldType.Integer:
-                    return value is int || value is long || value is short || 
-                           (value is string s && int.TryParse(s, out _));
-                
+                    return value is int || value is long || value is short ||
+                           (value is string s1 && int.TryParse(s1, out _));
+
                 case FieldType.Decimal:
-                    return value is float || value is double || value is decimal || 
-                           (value is string s && double.TryParse(s, out _));
-                
+                    return value is float || value is double || value is decimal ||
+                           (value is string s2 && double.TryParse(s2, out _));
+
                 case FieldType.Boolean:
-                    return value is bool || 
-                           (value is string s && bool.TryParse(s, out _));
-                
+                    return value is bool ||
+                           (value is string s3 && bool.TryParse(s3, out _));
+
                 case FieldType.DateTime:
-                    return value is DateTime || 
-                           (value is string s && DateTime.TryParse(s, out _));
-                
+                    return value is DateTime ||
+                           (value is string s4 && DateTime.TryParse(s4, out _));
+
                 case FieldType.Json:
-                    if (value is string s)
+                    if (value is string s5)
                     {
                         try
                         {
-                            System.Text.Json.JsonDocument.Parse(s);
+                            System.Text.Json.JsonDocument.Parse(s5);
                             return true;
                         }
                         catch
@@ -303,28 +303,28 @@ namespace GenericDataPlatform.ETL.Validators
                         }
                     }
                     return false;
-                
+
                 case FieldType.Binary:
                     return value is byte[] || value is System.IO.Stream;
-                
+
                 case FieldType.Array:
                     return value is Array || value is System.Collections.IEnumerable;
-                
+
                 case FieldType.Complex:
                     return true; // Accept any type for complex fields
-                
+
                 default:
                     return false;
             }
         }
     }
-    
+
     public interface IValidator
     {
         string Type { get; }
         Task<ValidationResult> ValidateAsync(object input, Dictionary<string, object> configuration, DataSourceDefinition source);
     }
-    
+
     public class ValidationResult
     {
         public bool IsValid { get; set; }
@@ -333,7 +333,7 @@ namespace GenericDataPlatform.ETL.Validators
         public List<ValidationError> Errors { get; set; } = new List<ValidationError>();
         public DateTime ValidationTime { get; set; }
     }
-    
+
     public class ValidationError
     {
         public string RecordId { get; set; }
@@ -341,7 +341,7 @@ namespace GenericDataPlatform.ETL.Validators
         public ValidationErrorType ErrorType { get; set; }
         public string Message { get; set; }
     }
-    
+
     public enum ValidationErrorType
     {
         MissingRequiredField,
@@ -350,11 +350,11 @@ namespace GenericDataPlatform.ETL.Validators
         ValidationRuleViolation,
         CustomValidationFailure
     }
-    
+
     public class ValidationException : Exception
     {
         public ValidationResult ValidationResult { get; }
-        
+
         public ValidationException(string message, ValidationResult validationResult) : base(message)
         {
             ValidationResult = validationResult;

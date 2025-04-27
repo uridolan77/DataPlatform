@@ -148,9 +148,9 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                 {
                     var dependencyId = step.DependsOn[0];
                     if (context.Metadata != null &&
-                        context.Metadata.TryGetValue("lineage", out var lineageObj) &&
-                        lineageObj is Dictionary<string, object> lineageMetadata &&
-                        lineageMetadata.TryGetValue($"step_{dependencyId}_outputEntityId", out var entityIdObj))
+                        context.Metadata.TryGetValue("lineage", out var lineageObj1) &&
+                        lineageObj1 is Dictionary<string, object> lineageMetadata1 &&
+                        lineageMetadata1.TryGetValue($"step_{dependencyId}_outputEntityId", out var entityIdObj))
                     {
                         inputEntityId = entityIdObj.ToString();
                     }
@@ -304,9 +304,9 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                 {
                     var dependencyId = step.DependsOn[0];
                     if (context.Metadata != null &&
-                        context.Metadata.TryGetValue("lineage", out var lineageObj) &&
-                        lineageObj is Dictionary<string, object> lineageMetadata &&
-                        lineageMetadata.TryGetValue($"step_{dependencyId}_outputEntityId", out var entityIdObj))
+                        context.Metadata.TryGetValue("lineage", out var lineageObj2) &&
+                        lineageObj2 is Dictionary<string, object> lineageMetadata2 &&
+                        lineageMetadata2.TryGetValue($"step_{dependencyId}_outputEntityId", out var entityIdObj))
                     {
                         inputEntityId = entityIdObj.ToString();
                     }
