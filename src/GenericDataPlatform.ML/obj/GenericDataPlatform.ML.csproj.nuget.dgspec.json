@@ -550,6 +550,26 @@
               "target": "Package",
               "version": "[3.0.0, )",
               "versionCentrallyManaged": true
+            },
+            "Microsoft.ML.AutoML": {
+              "target": "Package",
+              "version": "(, )"
+            },
+            "Microsoft.ML.FastTree": {
+              "target": "Package",
+              "version": "(, )"
+            },
+            "Microsoft.ML.LightGbm": {
+              "target": "Package",
+              "version": "(, )"
+            },
+            "Microsoft.ML.Recommender": {
+              "target": "Package",
+              "version": "(, )"
+            },
+            "Microsoft.ML.TimeSeries": {
+              "target": "Package",
+              "version": "(, )"
             }
           },
           "centralPackageVersions": {

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.ML")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+27751aa0f7ca983b1daf384d41d48dd90a8ce137")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c7988df79ecc24ee8766fdd9f68741a793f49dc1")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.ML")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.ML")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

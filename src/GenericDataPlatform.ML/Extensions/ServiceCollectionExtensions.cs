@@ -28,12 +28,18 @@ namespace GenericDataPlatform.ML.Extensions
             // Register training services
             services.AddSingleton<IModelTrainer, ModelTrainer>();
             services.AddSingleton<IModelEvaluator, ModelEvaluator>();
+            services.AddSingleton<IFeatureSelectionService, FeatureSelectionService>();
+            services.AddSingleton<IHyperparameterTuningService, HyperparameterTuningService>();
+            services.AddSingleton<IConceptDriftDetector, ConceptDriftDetector>();
 
             // Register core services
             services.AddSingleton<IMLService, MLService>();
             services.AddSingleton<ITrainingOrchestrationService, TrainingOrchestrationService>();
             services.AddSingleton<IModelManagementService, ModelManagementService>();
             services.AddSingleton<IPredictionService, PredictionService>();
+            services.AddSingleton<IAutoMLService, AutoMLService>();
+            services.AddSingleton<IModelExplainerService, ModelExplainerService>();
+            services.AddSingleton<IOnlineLearningService, OnlineLearningService>();
 
             // Register infrastructure services
             services.AddMLFlowIntegration(configuration);

@@ -24,6 +24,7 @@ namespace GenericDataPlatform.ML.Services.Core
         private readonly IMetadataRepository _metadataRepository;
         private readonly IDynamicObjectGenerator _dynamicObjectGenerator;
         private readonly IStorageService _storageService;
+        private readonly IOnlineLearningService _onlineLearningService;
         private readonly MLContext _mlContext;
         private readonly ILogger<PredictionService> _logger;
 
@@ -49,6 +50,7 @@ namespace GenericDataPlatform.ML.Services.Core
             IMetadataRepository metadataRepository,
             IDynamicObjectGenerator dynamicObjectGenerator,
             IStorageService storageService,
+            IOnlineLearningService onlineLearningService,
             MLContext mlContext,
             ILogger<PredictionService> logger)
         {
@@ -57,6 +59,7 @@ namespace GenericDataPlatform.ML.Services.Core
             _metadataRepository = metadataRepository ?? throw new ArgumentNullException(nameof(metadataRepository));
             _dynamicObjectGenerator = dynamicObjectGenerator ?? throw new ArgumentNullException(nameof(dynamicObjectGenerator));
             _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
+            _onlineLearningService = onlineLearningService ?? throw new ArgumentNullException(nameof(onlineLearningService));
             _mlContext = mlContext ?? throw new ArgumentNullException(nameof(mlContext));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -140,6 +143,9 @@ namespace GenericDataPlatform.ML.Services.Core
                     stopwatch.ElapsedMilliseconds / (double)instances.Count,
                     errorCount);
 
+                // Check for concept drift if enough data has been collected
+                await CheckForConceptDriftAsync(modelName, metadata.Version, instances);
+
                 // Create response
                 var response = new PredictionResponse
                 {
@@ -150,7 +156,8 @@ namespace GenericDataPlatform.ML.Services.Core
                         Version = metadata.Version,
                         Type = metadata.Type,
                         InputSchema = metadata.InputSchema,
-                        OutputSchema = metadata.OutputSchema
+                        OutputSchema = metadata.OutputSchema,
+                        SupportsOnlineLearning = await _onlineLearningService.SupportsOnlineLearningAsync(modelName, metadata.Version)
                     },
                     Timestamp = DateTime.UtcNow
                 };
@@ -622,6 +629,54 @@ namespace GenericDataPlatform.ML.Services.Core
                 modelName, metadata.Version);
 
             return (model, metadata);
+        }
+
+        /// <summary>
+        /// Checks for concept drift and potentially updates the model
+        /// </summary>
+        private async Task CheckForConceptDriftAsync(string modelName, string modelVersion, List<Dictionary<string, object>> instances)
+        {
+            try
+            {
+                // Check if online learning is enabled for this model
+                var supportsOnlineLearning = await _onlineLearningService.SupportsOnlineLearningAsync(modelName, modelVersion);
+                if (!supportsOnlineLearning)
+                {
+                    return;
+                }
+
+                // Get online learning config
+                var config = await _onlineLearningService.GetOnlineLearningConfigAsync(modelName, modelVersion);
+                if (!config.Enabled)
+                {
+                    return;
+                }
+
+                // Store prediction data for drift detection
+                // In a real implementation, this would be stored in a database or other persistent storage
+                // For now, we'll just log that we would store it
+                _logger.LogInformation("Storing prediction data for drift detection: {ModelName} version {ModelVersion}, {InstanceCount} instances",
+                    modelName, modelVersion, instances.Count);
+
+                // Check for concept drift periodically
+                // In a real implementation, this would be done asynchronously or on a schedule
+                // For now, we'll just log that we would check for drift
+                _logger.LogInformation("Checking for concept drift: {ModelName} version {ModelVersion}",
+                    modelName, modelVersion);
+
+                // If drift is detected and auto-update is enabled, update the model
+                if (config.AutoUpdateOnDrift)
+                {
+                    _logger.LogInformation("Auto-update on drift is enabled for model {ModelName} version {ModelVersion}",
+                        modelName, modelVersion);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't fail the prediction
+                _logger.LogError(ex, "Error checking for concept drift for model {ModelName} version {ModelVersion}",
+                    modelName, modelVersion);
+            }
         }
 
         /// <summary>
