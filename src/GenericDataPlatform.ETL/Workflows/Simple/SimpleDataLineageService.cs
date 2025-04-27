@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using GenericDataPlatform.ETL.Workflows.Tracking;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
     public class SimpleDataLineageService : IDataLineageService
     {
         private readonly ILogger<SimpleDataLineageService> _logger;
+        private readonly Dictionary<string, DataEntity> _entities = new Dictionary<string, DataEntity>();
 
         public SimpleDataLineageService(ILogger<SimpleDataLineageService> logger)
         {
@@ -126,6 +128,107 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
             }
 
             return Task.FromResult(graph);
+        }
+
+        /// <summary>
+        /// Saves a data entity
+        /// </summary>
+        public Task<string> SaveDataEntityAsync(DataEntity entity)
+        {
+            if (string.IsNullOrEmpty(entity.Id))
+            {
+                entity.Id = Guid.NewGuid().ToString();
+            }
+
+            _logger.LogInformation("Saving data entity {EntityId} of type {EntityType}", entity.Id, entity.Type);
+
+            lock (_entities)
+            {
+                _entities[entity.Id] = entity;
+            }
+
+            return Task.FromResult(entity.Id);
+        }
+
+        /// <summary>
+        /// Gets a data entity by ID
+        /// </summary>
+        public Task<DataEntity> GetDataEntityAsync(string entityId)
+        {
+            _logger.LogInformation("Getting data entity {EntityId}", entityId);
+
+            lock (_entities)
+            {
+                if (_entities.TryGetValue(entityId, out var entity))
+                {
+                    return Task.FromResult(entity);
+                }
+            }
+
+            // Return a sample entity if not found
+            var sampleEntity = new DataEntity
+            {
+                Id = entityId,
+                Name = $"Sample Entity {entityId}",
+                Type = "Dataset",
+                Location = $"memory://{entityId}",
+                Properties = new Dictionary<string, object>
+                {
+                    ["createdAt"] = DateTime.UtcNow.AddDays(-10)
+                }
+            };
+
+            return Task.FromResult(sampleEntity);
+        }
+
+        /// <summary>
+        /// Gets data entities by type
+        /// </summary>
+        public Task<List<DataEntity>> GetDataEntitiesByTypeAsync(string entityType)
+        {
+            _logger.LogInformation("Getting data entities of type {EntityType}", entityType);
+
+            List<DataEntity> entities;
+            lock (_entities)
+            {
+                entities = _entities.Values
+                    .Where(e => e.Type == entityType)
+                    .ToList();
+            }
+
+            // If no entities found, return sample entities
+            if (!entities.Any())
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    entities.Add(new DataEntity
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Name = $"Sample {entityType} {i}",
+                        Type = entityType,
+                        Location = $"memory://{entityType}/{i}",
+                        Properties = new Dictionary<string, object>
+                        {
+                            ["createdAt"] = DateTime.UtcNow.AddDays(-i)
+                        }
+                    });
+                }
+            }
+
+            return Task.FromResult(entities);
+        }
+
+        /// <summary>
+        /// Deletes a data entity
+        /// </summary>
+        public Task<bool> DeleteDataEntityAsync(string entityId)
+        {
+            _logger.LogInformation("Deleting data entity {EntityId}", entityId);
+
+            lock (_entities)
+            {
+                return Task.FromResult(_entities.Remove(entityId));
+            }
         }
     }
 }

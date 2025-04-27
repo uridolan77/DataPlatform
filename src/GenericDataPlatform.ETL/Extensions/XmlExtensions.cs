@@ -1,3 +1,4 @@
+using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
@@ -15,20 +16,20 @@ namespace GenericDataPlatform.ETL.Extensions
         {
             // Try to select the attribute directly
             var attribute = element.XPathEvaluate(xpath, namespaceResolver) as XAttribute;
-            
+
             if (attribute != null)
             {
                 return attribute;
             }
-            
+
             // If the XPath doesn't directly return an attribute, try to select it as an object
             var result = element.XPathEvaluate(xpath, namespaceResolver);
-            
+
             if (result is XAttribute attr)
             {
                 return attr;
             }
-            
+
             // If the result is a sequence, try to get the first item as an attribute
             if (result is System.Collections.IEnumerable enumerable)
             {
@@ -40,7 +41,7 @@ namespace GenericDataPlatform.ETL.Extensions
                     }
                 }
             }
-            
+
             return null;
         }
     }

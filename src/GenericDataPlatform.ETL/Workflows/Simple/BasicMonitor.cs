@@ -96,7 +96,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Workflow",
-                    EventType = "Started",
+                    EventTypeString = "WorkflowStarted",
                     Timestamp = startTime,
                     Data = new Dictionary<string, object>
                     {
@@ -109,7 +109,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Extract",
-                    EventType = "Started",
+                    EventTypeString = "StepStarted",
                     Timestamp = startTime.AddSeconds(1),
                     Data = null
                 });
@@ -119,7 +119,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Extract",
-                    EventType = "Completed",
+                    EventTypeString = "StepCompleted",
                     Timestamp = startTime.AddSeconds(6),
                     Data = new Dictionary<string, object>
                     {
@@ -132,7 +132,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Transform",
-                    EventType = "Started",
+                    EventTypeString = "StepStarted",
                     Timestamp = startTime.AddSeconds(7),
                     Data = null
                 });
@@ -142,7 +142,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Transform",
-                    EventType = "Completed",
+                    EventTypeString = "StepCompleted",
                     Timestamp = startTime.AddSeconds(10),
                     Data = new Dictionary<string, object>
                     {
@@ -155,7 +155,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Load",
-                    EventType = "Started",
+                    EventTypeString = "StepStarted",
                     Timestamp = startTime.AddSeconds(11),
                     Data = null
                 });
@@ -165,7 +165,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Load",
-                    EventType = "Completed",
+                    EventTypeString = "StepCompleted",
                     Timestamp = startTime.AddSeconds(18),
                     Data = new Dictionary<string, object>
                     {
@@ -178,7 +178,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Id = Guid.NewGuid().ToString(),
                     ExecutionId = executionId,
                     ActivityName = "Workflow",
-                    EventType = "Completed",
+                    EventTypeString = "WorkflowCompleted",
                     Timestamp = startTime.AddSeconds(19),
                     Data = new Dictionary<string, object>
                     {

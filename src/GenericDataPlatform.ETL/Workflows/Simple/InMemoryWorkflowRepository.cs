@@ -159,8 +159,8 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
                     Status = e.Status,
                     StartedAt = e.StartedAt,
                     CompletedAt = e.CompletedAt,
-                    Duration = e.CompletedAt.HasValue && e.StartedAt.HasValue
-                        ? (e.CompletedAt.Value - e.StartedAt.Value).TotalMilliseconds
+                    Duration = e.CompletedAt != default && e.StartedAt != default
+                        ? (e.CompletedAt - e.StartedAt).TotalMilliseconds
                         : 0
                 })
                 .ToList();
@@ -309,7 +309,7 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
         {
             _logger.LogInformation("Getting metrics for workflow {WorkflowId}", workflowId);
 
-            var executions = _executions.Values
+            var executions = _executions
                 .Where(e => e.WorkflowId == workflowId)
                 .ToList();
 
@@ -327,12 +327,12 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
 
                 // Calculate average duration for completed executions
                 var completedExecutions = executions
-                    .Where(e => e.Status == WorkflowExecutionStatus.Completed && e.EndTime.HasValue)
+                    .Where(e => e.Status == WorkflowExecutionStatus.Completed && e.EndTime != default)
                     .ToList();
 
                 if (completedExecutions.Any())
                 {
-                    var totalDuration = completedExecutions.Sum(e => (e.EndTime.Value - e.StartTime).TotalMilliseconds);
+                    var totalDuration = completedExecutions.Sum(e => (e.EndTime - e.StartTime).TotalMilliseconds);
                     metrics.AverageDuration = totalDuration / completedExecutions.Count;
                 }
 
@@ -356,12 +356,12 @@ namespace GenericDataPlatform.ETL.Workflows.Simple
 
                     // Calculate average duration for completed steps
                     var completedSteps = steps
-                        .Where(s => s.Status == WorkflowStepExecutionStatus.Completed && s.EndTime.HasValue)
+                        .Where(s => s.Status == WorkflowStepExecutionStatus.Completed && s.EndTime != default)
                         .ToList();
 
                     if (completedSteps.Any())
                     {
-                        var totalDuration = completedSteps.Sum(s => (s.EndTime.Value - s.StartTime).TotalMilliseconds);
+                        var totalDuration = completedSteps.Sum(s => (s.EndTime - s.StartTime).TotalMilliseconds);
                         activityMetrics.AverageDuration = totalDuration / completedSteps.Count;
                     }
 

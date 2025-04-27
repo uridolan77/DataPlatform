@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\dev\\DataPlatform\\src\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9B181F65-66BA-4B88-9E7D-D9B7B3CDE313}|GenericDataPlatform.ETL\\GenericDataPlatform.ETL.csproj|c:\\dev\\dataplatform\\src\\genericdataplatform.etl\\workflows\\models\\workflowdefinition.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9B181F65-66BA-4B88-9E7D-D9B7B3CDE313}|GenericDataPlatform.ETL\\GenericDataPlatform.ETL.csproj|solutionrelative:genericdataplatform.etl\\workflows\\models\\workflowdefinition.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B57AFB84-34CE-4435-9B18-02223487F4D7}|GenericDataPlatform.Common\\GenericDataPlatform.Common.csproj|c:\\dev\\dataplatform\\src\\genericdataplatform.common\\clients\\resilientstorageserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B57AFB84-34CE-4435-9B18-02223487F4D7}|GenericDataPlatform.Common\\GenericDataPlatform.Common.csproj|solutionrelative:genericdataplatform.common\\clients\\resilientstorageserviceclient.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -14,15 +18,28 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "WorkflowDefinition.cs",
+              "DocumentMoniker": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.ETL\\Workflows\\Models\\WorkflowDefinition.cs",
+              "RelativeDocumentMoniker": "GenericDataPlatform.ETL\\Workflows\\Models\\WorkflowDefinition.cs",
+              "ToolTip": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.ETL\\Workflows\\Models\\WorkflowDefinition.cs",
+              "RelativeToolTip": "GenericDataPlatform.ETL\\Workflows\\Models\\WorkflowDefinition.cs",
+              "ViewState": "AgIAAEkAAAAAAAAAAAAywF8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-27T07:47:55.863Z",
+              "EditorCaption": ""
+            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "ResilientStorageServiceClient.cs",
               "DocumentMoniker": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.Common\\Clients\\ResilientStorageServiceClient.cs",
               "RelativeDocumentMoniker": "GenericDataPlatform.Common\\Clients\\ResilientStorageServiceClient.cs",

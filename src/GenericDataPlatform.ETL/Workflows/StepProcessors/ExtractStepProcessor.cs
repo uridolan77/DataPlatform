@@ -56,8 +56,15 @@ namespace GenericDataPlatform.ETL.Workflows.StepProcessors
                     throw new ArgumentException($"Extractor of type {extractorType} not found");
                 }
 
+                // Create a DataSourceDefinition if context.Source is a string
+                var source = context.Source;
+                if (source is string sourceId)
+                {
+                    source = new DataSourceDefinition { Id = sourceId };
+                }
+
                 // Execute extractor
-                var result = await extractor.ExtractAsync(step.Configuration, context.Source, context.Parameters);
+                var result = await extractor.ExtractAsync(step.Configuration, source, context.Parameters);
 
                 // Track lineage
                 await _lineageTracker.TrackExtractionAsync(step, context, result);

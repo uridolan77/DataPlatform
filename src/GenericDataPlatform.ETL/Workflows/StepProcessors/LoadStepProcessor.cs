@@ -72,8 +72,15 @@ namespace GenericDataPlatform.ETL.Workflows.StepProcessors
                 // Get target location from configuration
                 string targetLocation = GetTargetLocation(step.Configuration, context.Source);
 
+                // Create a DataSourceDefinition if context.Source is a string
+                var source = context.Source;
+                if (source is string sourceId)
+                {
+                    source = new DataSourceDefinition { Id = sourceId };
+                }
+
                 // Execute loader
-                var result = await loader.LoadAsync(inputData, step.Configuration, context.Source);
+                var result = await loader.LoadAsync(inputData, step.Configuration, source);
 
                 // Track lineage
                 await _lineageTracker.TrackLoadingAsync(step, context, inputData, targetLocation);

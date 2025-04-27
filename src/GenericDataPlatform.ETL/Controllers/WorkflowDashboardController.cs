@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GenericDataPlatform.ETL.Workflows;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Models;
+using GenericDataPlatform.ETL.Workflows.Monitoring;
 using GenericDataPlatform.ETL.Workflows.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

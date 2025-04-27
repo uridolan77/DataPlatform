@@ -69,8 +69,15 @@ namespace GenericDataPlatform.ETL.Workflows.StepProcessors
                     throw new ArgumentException($"Input data not found for step {step.Id} from dependent step {inputStepId}");
                 }
 
+                // Create a DataSourceDefinition if context.Source is a string
+                var source = context.Source;
+                if (source is string sourceId)
+                {
+                    source = new DataSourceDefinition { Id = sourceId };
+                }
+
                 // Execute transformer
-                var result = await transformer.TransformAsync(inputData, step.Configuration, context.Source);
+                var result = await transformer.TransformAsync(inputData, step.Configuration, source);
 
                 // Track lineage
                 await _lineageTracker.TrackTransformationAsync(step, context, inputData, result);

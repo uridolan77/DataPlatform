@@ -92,4 +92,5 @@ namespace GenericDataPlatform.ETL.Workflows.Models
         /// Gets or sets the error handling configuration for the workflow
         /// </summary>
         public WorkflowErrorHandling ErrorHandling { get; set; }
+    }
 }

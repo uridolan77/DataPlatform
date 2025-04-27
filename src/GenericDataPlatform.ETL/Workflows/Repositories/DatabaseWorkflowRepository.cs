@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Dapper;
 using GenericDataPlatform.Common.Resilience;
+using GenericDataPlatform.ETL.Extensions;
 using GenericDataPlatform.ETL.Workflows.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,7 +32,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
             _connectionString = options.Value.DatabaseConnectionString;
             _logger = logger;
             _resiliencePolicy = resiliencePolicy;
-            
+
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -57,27 +58,27 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                     {
                         // Get the latest version
                         sql = @"
-                            SELECT Definition 
-                            FROM WorkflowDefinitions 
-                            WHERE Id = @Id 
-                            ORDER BY Version DESC 
+                            SELECT Definition
+                            FROM WorkflowDefinitions
+                            WHERE Id = @Id
+                            ORDER BY Version DESC
                             LIMIT 1";
-                        
+
                         parameters = new { Id = id };
                     }
                     else
                     {
                         // Get the specific version
                         sql = @"
-                            SELECT Definition 
-                            FROM WorkflowDefinitions 
+                            SELECT Definition
+                            FROM WorkflowDefinitions
                             WHERE Id = @Id AND Version = @Version";
-                        
+
                         parameters = new { Id = id, Version = version };
                     }
 
                     var definitionJson = await connection.QueryFirstOrDefaultAsync<string>(sql, parameters);
-                    
+
                     if (string.IsNullOrEmpty(definitionJson))
                         return null;
 
@@ -113,7 +114,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         LIMIT @Take OFFSET @Skip";
 
                     var definitionJsons = await connection.QueryAsync<string>(sql, new { Skip = skip, Take = take });
-                    
+
                     var workflows = new List<WorkflowDefinition>();
                     foreach (var json in definitionJsons)
                     {
@@ -206,8 +207,8 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                     var sql = @"
                         INSERT INTO WorkflowDefinitions (Id, Version, Name, Description, Definition, CreatedAt, UpdatedAt)
                         VALUES (@Id, @Version, @Name, @Description, @Definition, @CreatedAt, @UpdatedAt)
-                        ON CONFLICT (Id, Version) 
-                        DO UPDATE SET 
+                        ON CONFLICT (Id, Version)
+                        DO UPDATE SET
                             Name = EXCLUDED.Name,
                             Description = EXCLUDED.Description,
                             Definition = EXCLUDED.Definition,
@@ -289,7 +290,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         WHERE Id = @Id";
 
                     var executionJson = await connection.QueryFirstOrDefaultAsync<string>(sql, new { Id = id });
-                    
+
                     if (string.IsNullOrEmpty(executionJson))
                         return null;
 
@@ -320,7 +321,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         LIMIT @Limit";
 
                     var executionJsons = await connection.QueryAsync<string>(sql, new { WorkflowId = workflowId, Limit = limit });
-                    
+
                     var executions = new List<WorkflowExecution>();
                     foreach (var json in executionJsons)
                     {
@@ -353,7 +354,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         LIMIT @Limit";
 
                     var executionJsons = await connection.QueryAsync<string>(sql, new { Limit = limit });
-                    
+
                     var executions = new List<WorkflowExecution>();
                     foreach (var json in executionJsons)
                     {
@@ -390,8 +391,8 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                     var sql = @"
                         INSERT INTO WorkflowExecutions (Id, WorkflowId, Status, StartTime, EndTime, ExecutionData)
                         VALUES (@Id, @WorkflowId, @Status, @StartTime, @EndTime, @ExecutionData)
-                        ON CONFLICT (Id) 
-                        DO UPDATE SET 
+                        ON CONFLICT (Id)
+                        DO UPDATE SET
                             Status = EXCLUDED.Status,
                             EndTime = EXCLUDED.EndTime,
                             ExecutionData = EXCLUDED.ExecutionData";
@@ -427,9 +428,9 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         return false;
 
                     execution.Status = status;
-                    
-                    if (status == WorkflowExecutionStatus.Completed || 
-                        status == WorkflowExecutionStatus.Failed || 
+
+                    if (status == WorkflowExecutionStatus.Completed ||
+                        status == WorkflowExecutionStatus.Failed ||
                         status == WorkflowExecutionStatus.Cancelled)
                     {
                         execution.EndTime = DateTime.UtcNow;
@@ -495,7 +496,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
 
                     // Get basic execution metrics
                     var sql = @"
-                        SELECT 
+                        SELECT
                             COUNT(*) AS TotalExecutions,
                             SUM(CASE WHEN Status = 'Completed' THEN 1 ELSE 0 END) AS SuccessfulExecutions,
                             SUM(CASE WHEN Status = 'Failed' THEN 1 ELSE 0 END) AS FailedExecutions,
@@ -508,7 +509,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         WHERE WorkflowId = @WorkflowId";
 
                     var basicMetrics = await connection.QueryFirstOrDefaultAsync(sql, new { WorkflowId = workflowId });
-                    
+
                     if (basicMetrics == null || basicMetrics.TotalExecutions == 0)
                     {
                         return new WorkflowMetrics
@@ -527,7 +528,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
 
                     // Get recent executions to analyze step metrics and common errors
                     var executions = await GetExecutionHistoryAsync(workflowId, 20);
-                    
+
                     var stepMetrics = new Dictionary<string, StepMetrics>();
                     var errorCounts = new Dictionary<string, ErrorMetrics>();
 
@@ -556,7 +557,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                             }
 
                             metrics.TotalExecutions++;
-                            
+
                             if (step.Status == WorkflowStepExecutionStatus.Completed)
                                 metrics.SuccessfulExecutions++;
                             else if (step.Status == WorkflowStepExecutionStatus.Failed)
@@ -567,21 +568,21 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                             if (step.EndTime.HasValue)
                             {
                                 var duration = (step.EndTime.Value - step.StartTime).TotalSeconds;
-                                metrics.AverageExecutionTimeInSeconds = 
+                                metrics.AverageExecutionTimeInSeconds =
                                     (metrics.AverageExecutionTimeInSeconds * (metrics.TotalExecutions - 1) + duration) / metrics.TotalExecutions;
-                                
+
                                 metrics.MaxExecutionTimeInSeconds = Math.Max(metrics.MaxExecutionTimeInSeconds, duration);
                                 metrics.MinExecutionTimeInSeconds = Math.Min(metrics.MinExecutionTimeInSeconds, duration);
                             }
 
-                            metrics.AverageRetryCount = 
+                            metrics.AverageRetryCount =
                                 (metrics.AverageRetryCount * (metrics.TotalExecutions - 1) + step.RetryCount) / metrics.TotalExecutions;
 
                             // Process step errors
                             foreach (var error in step.Errors)
                             {
                                 var errorKey = $"{error.ErrorType}:{error.Message}";
-                                
+
                                 if (!errorCounts.TryGetValue(errorKey, out var errorMetrics))
                                 {
                                     errorMetrics = new ErrorMetrics
@@ -596,11 +597,11 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                                 }
 
                                 errorMetrics.Occurrences++;
-                                errorMetrics.FirstOccurrence = error.Timestamp < errorMetrics.FirstOccurrence 
-                                    ? error.Timestamp 
+                                errorMetrics.FirstOccurrence = error.Timestamp < errorMetrics.FirstOccurrence
+                                    ? error.Timestamp
                                     : errorMetrics.FirstOccurrence;
-                                errorMetrics.LastOccurrence = error.Timestamp > errorMetrics.LastOccurrence 
-                                    ? error.Timestamp 
+                                errorMetrics.LastOccurrence = error.Timestamp > errorMetrics.LastOccurrence
+                                    ? error.Timestamp
                                     : errorMetrics.LastOccurrence;
                             }
                         }
@@ -609,7 +610,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         foreach (var error in execution.Errors)
                         {
                             var errorKey = $"{error.ErrorType}:{error.Message}";
-                            
+
                             if (!errorCounts.TryGetValue(errorKey, out var errorMetrics))
                             {
                                 errorMetrics = new ErrorMetrics
@@ -624,11 +625,11 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                             }
 
                             errorMetrics.Occurrences++;
-                            errorMetrics.FirstOccurrence = error.Timestamp < errorMetrics.FirstOccurrence 
-                                ? error.Timestamp 
+                            errorMetrics.FirstOccurrence = error.Timestamp < errorMetrics.FirstOccurrence
+                                ? error.Timestamp
                                 : errorMetrics.FirstOccurrence;
-                            errorMetrics.LastOccurrence = error.Timestamp > errorMetrics.LastOccurrence 
-                                ? error.Timestamp 
+                            errorMetrics.LastOccurrence = error.Timestamp > errorMetrics.LastOccurrence
+                                ? error.Timestamp
                                 : errorMetrics.LastOccurrence;
                         }
                     }
@@ -645,7 +646,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
                         MaxExecutionTimeInSeconds = basicMetrics.MaxExecutionTime ?? 0,
                         MinExecutionTimeInSeconds = basicMetrics.MinExecutionTime ?? 0,
                         LastExecutionTime = basicMetrics.LastExecutionTime,
-                        StepMetrics = stepMetrics,
+                        StepMetrics = stepMetrics.Values.ToList(),
                         CommonErrors = errorCounts.Values.OrderByDescending(e => e.Occurrences).Take(10).ToList()
                     };
 

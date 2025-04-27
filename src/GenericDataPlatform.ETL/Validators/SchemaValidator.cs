@@ -222,7 +222,7 @@ namespace GenericDataPlatform.ETL.Validators
                     if ((field.Type == FieldType.Integer || field.Type == FieldType.Decimal) &&
                         double.TryParse(value.ToString(), out var numericValue))
                     {
-                        if (field.Validation.MinValue.HasValue && numericValue < field.Validation.MinValue.Value)
+                        if (field.Validation.MinValue.HasValue && numericValue < Convert.ToDouble(field.Validation.MinValue.Value))
                         {
                             errors.Add(new ValidationError
                             {
@@ -233,7 +233,7 @@ namespace GenericDataPlatform.ETL.Validators
                             });
                         }
 
-                        if (field.Validation.MaxValue.HasValue && numericValue > field.Validation.MaxValue.Value)
+                        if (field.Validation.MaxValue.HasValue && numericValue > Convert.ToDouble(field.Validation.MaxValue.Value))
                         {
                             errors.Add(new ValidationError
                             {
@@ -248,8 +248,8 @@ namespace GenericDataPlatform.ETL.Validators
                     // Validate enum values
                     if (field.Validation.AllowedValues != null && field.Validation.AllowedValues.Any())
                     {
-                        var stringValue = value.ToString();
-                        if (!field.Validation.AllowedValues.Contains(stringValue))
+                        var valueAsString = value.ToString();
+                        if (!field.Validation.AllowedValues.Contains(valueAsString))
                         {
                             errors.Add(new ValidationError
                             {
