@@ -165,3 +165,4 @@ C:\dev\DataPlatform\src\GenericDataPlatform.StorageService\obj\Debug\net9.0\refi
 C:\dev\DataPlatform\src\GenericDataPlatform.StorageService\obj\Debug\net9.0\GenericDataPlatform.StorageService.pdb
 C:\dev\DataPlatform\src\GenericDataPlatform.StorageService\obj\Debug\net9.0\GenericDataPlatform.StorageService.genruntimeconfig.cache
 C:\dev\DataPlatform\src\GenericDataPlatform.StorageService\obj\Debug\net9.0\ref\GenericDataPlatform.StorageService.dll
+C:\dev\DataPlatform\src\GenericDataPlatform.StorageService\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
