@@ -1,0 +1,6 @@
+C:\dev\DataPlatform\src\GenericDataPlatform.ML\obj\Debug\net9.0\GenericDataPlatform.ML.csproj.AssemblyReference.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ML\obj\Debug\net9.0\GenericDataPlatform.ML.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\DataPlatform\src\GenericDataPlatform.ML\obj\Debug\net9.0\GenericDataPlatform.ML.AssemblyInfoInputs.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ML\obj\Debug\net9.0\GenericDataPlatform.ML.AssemblyInfo.cs
+C:\dev\DataPlatform\src\GenericDataPlatform.ML\obj\Debug\net9.0\GenericDataPlatform.ML.csproj.CoreCompileInputs.cache
+C:\dev\DataPlatform\src\GenericDataPlatform.ML\obj\Debug\net9.0\GenericDataPlatform.ML.sourcelink.json

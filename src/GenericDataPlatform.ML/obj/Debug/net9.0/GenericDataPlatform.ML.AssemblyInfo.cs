@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GenericDataPlatform.ML")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4729692591aec48d86ec24b0dcb20307a8a55f42")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+29c62e76f30a2aa301e0d80768846d87aa15d55a")]
 [assembly: System.Reflection.AssemblyProductAttribute("GenericDataPlatform.ML")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GenericDataPlatform.ML")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
