@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.ETL.Validators;
+using GenericDataPlatform.ETL.Validators.Exceptions;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,8 +78,16 @@ namespace GenericDataPlatform.ETL.Workflows.StepProcessors
                 var result = await validator.ValidateAsync(inputData, step.Configuration, source);
 
                 // Check if validation failed and fail-on-error is enabled
-                if (!result.IsValid && step.Configuration.TryGetValue("failOnError", out var failOnErrorObj) &&
-                    failOnErrorObj is bool failOnError && failOnError)
+                bool failOnError = false;
+                if (!result.IsValid && step.Configuration.TryGetValue("failOnError", out var failOnErrorObj))
+                {
+                    if (failOnErrorObj is bool failOnErrorValue)
+                    {
+                        failOnError = failOnErrorValue;
+                    }
+                }
+
+                if (!result.IsValid && failOnError)
                 {
                     throw new ValidationException($"Validation failed with {result.Errors.Count} errors", result);
                 }

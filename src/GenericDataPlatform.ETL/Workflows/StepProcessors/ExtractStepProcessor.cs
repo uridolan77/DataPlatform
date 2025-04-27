@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.ETL.Extractors.Base;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Models;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.ETL.Loaders.Base;
 using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Models;
