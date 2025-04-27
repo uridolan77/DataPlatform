@@ -21,7 +21,7 @@ namespace GenericDataPlatform.ML.Controllers
         private readonly IModelManagementService _modelManagementService;
         private readonly ITrainingOrchestrationService _trainingOrchestrationService;
         private readonly IPredictionService _predictionService;
-        
+
         public MLController(
             ILogger<MLController> logger,
             IMLService mlService,
@@ -35,7 +35,7 @@ namespace GenericDataPlatform.ML.Controllers
             _trainingOrchestrationService = trainingOrchestrationService;
             _predictionService = predictionService;
         }
-        
+
         /// <summary>
         /// Gets a model by ID
         /// </summary>
@@ -47,12 +47,12 @@ namespace GenericDataPlatform.ML.Controllers
             try
             {
                 var model = await _modelManagementService.GetModelDefinitionAsync(id);
-                
+
                 if (model == null)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok(model);
             }
             catch (KeyNotFoundException)
@@ -65,7 +65,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Lists all models
         /// </summary>
@@ -84,7 +84,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Creates a new model
         /// </summary>
@@ -108,7 +108,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Updates a model
         /// </summary>
@@ -124,7 +124,7 @@ namespace GenericDataPlatform.ML.Controllers
                 {
                     return BadRequest(new { error = "Model ID in URL does not match model ID in body" });
                 }
-                
+
                 var updatedModel = await _modelManagementService.UpdateModelDefinitionAsync(model);
                 return Ok(updatedModel);
             }
@@ -142,7 +142,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Deletes a model
         /// </summary>
@@ -166,7 +166,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Creates a training job
         /// </summary>
@@ -178,25 +178,28 @@ namespace GenericDataPlatform.ML.Controllers
             try
             {
                 // Get the model definition
-                var modelDefinition = await _modelManagementService.GetModelDefinitionAsync(request.ModelId);
-                
+                var modelDefinition = await _modelManagementService.GetModelAsync(request.ModelId);
+
                 if (modelDefinition == null)
                 {
                     return NotFound(new { error = $"Model not found: {request.ModelId}" });
                 }
-                
+
+                // Use the model definition from the metadata
+                var modelDef = modelDefinition.Definition;
+
                 // Create the training job
                 var job = await _trainingOrchestrationService.CreateTrainingJobAsync(
-                    modelDefinition,
+                    modelDef,
                     request.DataSourceId,
                     request.DataQuery);
-                
+
                 // Start the job if requested
                 if (request.StartImmediately)
                 {
-                    await _trainingOrchestrationService.StartTrainingJobAsync(job.Id);
+                    job = await _trainingOrchestrationService.StartTrainingJobAsync(job.Id);
                 }
-                
+
                 return CreatedAtAction(nameof(GetTrainingJobAsync), new { id = job.Id }, job);
             }
             catch (ArgumentException ex)
@@ -209,7 +212,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Gets a training job by ID
         /// </summary>
@@ -221,12 +224,12 @@ namespace GenericDataPlatform.ML.Controllers
             try
             {
                 var job = await _trainingOrchestrationService.GetTrainingJobAsync(id);
-                
+
                 if (job == null)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok(job);
             }
             catch (KeyNotFoundException)
@@ -239,7 +242,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Lists all training jobs
         /// </summary>
@@ -258,7 +261,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Starts a training job
         /// </summary>
@@ -282,7 +285,7 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Cancels a training job
         /// </summary>
@@ -306,24 +309,31 @@ namespace GenericDataPlatform.ML.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Makes a prediction
         /// </summary>
-        [HttpPost("predict")]
+        [HttpPost("predict/{modelName}/{modelVersion?}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PredictionResult>> PredictAsync([FromBody] PredictionRequest request)
+        public async Task<ActionResult<PredictionResponse>> PredictAsync(
+            string modelName,
+            string? modelVersion,
+            [FromBody] PredictionRequest request)
         {
             try
             {
-                var result = await _predictionService.PredictAsync(request);
+                var result = await _predictionService.PredictAsync(
+                    modelName,
+                    modelVersion,
+                    request.Instances);
+
                 return Ok(result);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound(new { error = $"Model not found: {request.ModelId}" });
+                return NotFound(new { error = $"Model not found: {modelName}" });
             }
             catch (ArgumentException ex)
             {
@@ -331,11 +341,12 @@ namespace GenericDataPlatform.ML.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error making prediction with model: {ModelId}", request.ModelId);
+                _logger.LogError(ex, "Error making prediction with model: {ModelName} version {ModelVersion}",
+                    modelName, modelVersion ?? "latest");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { error = ex.Message });
             }
         }
-        
+
         /// <summary>
         /// Gets a prediction result by ID
         /// </summary>
@@ -347,12 +358,12 @@ namespace GenericDataPlatform.ML.Controllers
             try
             {
                 var result = await _predictionService.GetPredictionResultAsync(id);
-                
+
                 if (result == null)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok(result);
             }
             catch (KeyNotFoundException)
@@ -366,7 +377,7 @@ namespace GenericDataPlatform.ML.Controllers
             }
         }
     }
-    
+
     /// <summary>
     /// Request for creating a training job
     /// </summary>
@@ -375,18 +386,18 @@ namespace GenericDataPlatform.ML.Controllers
         /// <summary>
         /// ID of the model to train
         /// </summary>
-        public string ModelId { get; set; }
-        
+        public required string ModelId { get; set; }
+
         /// <summary>
         /// ID of the data source to use for training
         /// </summary>
-        public string DataSourceId { get; set; }
-        
+        public required string DataSourceId { get; set; }
+
         /// <summary>
         /// Optional query to filter training data
         /// </summary>
-        public string DataQuery { get; set; }
-        
+        public string? DataQuery { get; set; }
+
         /// <summary>
         /// Whether to start the training job immediately
         /// </summary>

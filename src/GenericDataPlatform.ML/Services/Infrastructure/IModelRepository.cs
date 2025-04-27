@@ -14,15 +14,15 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
         /// </summary>
         /// <param name="metadata">Model metadata to save</param>
         Task SaveModelMetadataAsync(ModelMetadata metadata);
-        
+
         /// <summary>
         /// Gets model metadata from the repository
         /// </summary>
         /// <param name="modelName">Name of the model</param>
         /// <param name="version">Version of the model (null for latest)</param>
         /// <returns>Model metadata, or null if not found</returns>
-        Task<ModelMetadata> GetModelMetadataAsync(string modelName, string version = null);
-        
+        Task<ModelMetadata?> GetModelMetadataAsync(string modelName, string? version = null);
+
         /// <summary>
         /// Lists model metadata from the repository
         /// </summary>
@@ -30,15 +30,15 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
         /// <param name="skip">Number of models to skip</param>
         /// <param name="take">Number of models to take</param>
         /// <returns>List of model metadata</returns>
-        Task<List<ModelMetadata>> ListModelMetadataAsync(string filter = null, int skip = 0, int take = 20);
-        
+        Task<List<ModelMetadata>> ListModelMetadataAsync(string? filter = null, int skip = 0, int take = 20);
+
         /// <summary>
         /// Gets all versions of a model
         /// </summary>
         /// <param name="modelName">Name of the model</param>
         /// <returns>List of model metadata</returns>
         Task<List<ModelMetadata>> GetModelVersionsAsync(string modelName);
-        
+
         /// <summary>
         /// Gets models by stage
         /// </summary>
@@ -46,28 +46,28 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
         /// <param name="stage">Stage of the model</param>
         /// <returns>List of model metadata</returns>
         Task<List<ModelMetadata>> GetModelsByStageAsync(string modelName, string stage);
-        
+
         /// <summary>
         /// Deletes model metadata from the repository
         /// </summary>
         /// <param name="modelName">Name of the model</param>
         /// <param name="version">Version of the model</param>
         Task DeleteModelMetadataAsync(string modelName, string version);
-        
+
         /// <summary>
         /// Saves a model to the repository
         /// </summary>
         /// <param name="modelPath">Path to save the model to</param>
         /// <param name="modelBytes">Model data</param>
         Task SaveModelBytesAsync(string modelPath, byte[] modelBytes);
-        
+
         /// <summary>
         /// Loads a model from the repository
         /// </summary>
         /// <param name="modelPath">Path to load the model from</param>
         /// <returns>Model data</returns>
         Task<byte[]> LoadModelBytesAsync(string modelPath);
-        
+
         /// <summary>
         /// Deletes a model from the repository
         /// </summary>

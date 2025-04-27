@@ -17,19 +17,19 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
     {
         private readonly ILogger<ModelRepository> _logger;
         private readonly ModelRepositoryOptions _options;
-        
+
         public ModelRepository(
             IOptions<ModelRepositoryOptions> options,
             ILogger<ModelRepository> logger)
         {
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            
+
             // Create repositories directories if they don't exist
             Directory.CreateDirectory(_options.MetadataDirectory);
             Directory.CreateDirectory(_options.ModelsDirectory);
         }
-        
+
         /// <summary>
         /// Saves model metadata to the repository
         /// </summary>
@@ -41,41 +41,41 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     throw new ArgumentNullException(nameof(metadata));
                 }
-                
+
                 // Ensure directory exists
                 var modelDir = Path.Combine(_options.MetadataDirectory, metadata.Name);
                 Directory.CreateDirectory(modelDir);
-                
+
                 // Create file path
                 var filePath = Path.Combine(modelDir, $"{metadata.Version}.json");
-                
+
                 // Serialize metadata
                 var json = JsonSerializer.Serialize(metadata, new JsonSerializerOptions
                 {
                     WriteIndented = true
                 });
-                
+
                 // Write to file
                 await File.WriteAllTextAsync(filePath, json);
-                
+
                 // Update latest version reference
                 await UpdateLatestVersionAsync(metadata.Name, metadata.Version);
-                
-                _logger.LogInformation("Saved metadata for model {ModelName} version {Version} to {FilePath}", 
+
+                _logger.LogInformation("Saved metadata for model {ModelName} version {Version} to {FilePath}",
                     metadata.Name, metadata.Version, filePath);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving metadata for model {ModelName} version {Version}", 
+                _logger.LogError(ex, "Error saving metadata for model {ModelName} version {Version}",
                     metadata?.Name, metadata?.Version);
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Gets model metadata from the repository
         /// </summary>
-        public async Task<ModelMetadata> GetModelMetadataAsync(string modelName, string version = null)
+        public async Task<ModelMetadata?> GetModelMetadataAsync(string modelName, string? version = null)
         {
             try
             {
@@ -84,9 +84,9 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     throw new ArgumentException("Model name is required", nameof(modelName));
                 }
-                
+
                 // Get the version to load
-                string versionToLoad = version;
+                string? versionToLoad = version;
                 if (string.IsNullOrEmpty(versionToLoad))
                 {
                     // Load latest version
@@ -97,78 +97,78 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                         return null;
                     }
                 }
-                
+
                 // Create file path
                 var filePath = Path.Combine(_options.MetadataDirectory, modelName, $"{versionToLoad}.json");
-                
+
                 // Check if file exists
                 if (!File.Exists(filePath))
                 {
-                    _logger.LogWarning("Metadata file not found for model {ModelName} version {Version} at {FilePath}", 
+                    _logger.LogWarning("Metadata file not found for model {ModelName} version {Version} at {FilePath}",
                         modelName, versionToLoad, filePath);
                     return null;
                 }
-                
+
                 // Read and deserialize the file
                 var json = await File.ReadAllTextAsync(filePath);
                 var metadata = JsonSerializer.Deserialize<ModelMetadata>(json);
-                
-                _logger.LogInformation("Loaded metadata for model {ModelName} version {Version} from {FilePath}", 
+
+                _logger.LogInformation("Loaded metadata for model {ModelName} version {Version} from {FilePath}",
                     modelName, versionToLoad, filePath);
-                
+
                 return metadata;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting metadata for model {ModelName} version {Version}", 
+                _logger.LogError(ex, "Error getting metadata for model {ModelName} version {Version}",
                     modelName, version ?? "latest");
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Lists model metadata from the repository
         /// </summary>
-        public async Task<List<ModelMetadata>> ListModelMetadataAsync(string filter = null, int skip = 0, int take = 20)
+        public async Task<List<ModelMetadata>> ListModelMetadataAsync(string? filter = null, int skip = 0, int take = 20)
         {
             try
             {
                 var result = new List<ModelMetadata>();
-                
+
                 // Get all model directories
                 var modelDirs = Directory.GetDirectories(_options.MetadataDirectory);
-                
+
                 // Apply filter if specified
                 if (!string.IsNullOrEmpty(filter))
                 {
                     modelDirs = modelDirs.Where(d => Path.GetFileName(d).Contains(filter, StringComparison.OrdinalIgnoreCase)).ToArray();
                 }
-                
+
                 // Skip and take
                 modelDirs = modelDirs.Skip(skip).Take(take).ToArray();
-                
+
                 // Load latest version for each model
                 foreach (var modelDir in modelDirs)
                 {
                     var modelName = Path.GetFileName(modelDir);
                     var metadata = await GetModelMetadataAsync(modelName);
-                    
+
                     if (metadata != null)
                     {
                         result.Add(metadata);
                     }
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error listing model metadata with filter {Filter}, skip {Skip}, take {Take}", 
+                _logger.LogError(ex, "Error listing model metadata with filter {Filter}, skip {Skip}, take {Take}",
                     filter, skip, take);
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Gets all versions of a model
         /// </summary>
@@ -177,27 +177,27 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
             try
             {
                 var result = new List<ModelMetadata>();
-                
+
                 // Validate inputs
                 if (string.IsNullOrEmpty(modelName))
                 {
                     throw new ArgumentException("Model name is required", nameof(modelName));
                 }
-                
+
                 // Get directory for the model
                 var modelDir = Path.Combine(_options.MetadataDirectory, modelName);
-                
+
                 // Check if directory exists
                 if (!Directory.Exists(modelDir))
                 {
-                    _logger.LogWarning("Directory not found for model {ModelName} at {ModelDir}", 
+                    _logger.LogWarning("Directory not found for model {ModelName} at {ModelDir}",
                         modelName, modelDir);
                     return result;
                 }
-                
+
                 // Get all version files
                 var versionFiles = Directory.GetFiles(modelDir, "*.json");
-                
+
                 // Load metadata for each version
                 foreach (var versionFile in versionFiles)
                 {
@@ -206,24 +206,24 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                     {
                         continue;
                     }
-                    
+
                     // Parse version
                     var version = Path.GetFileNameWithoutExtension(versionFile);
-                    
+
                     // Load metadata
                     var metadata = await GetModelMetadataAsync(modelName, version);
-                    
+
                     if (metadata != null)
                     {
                         result.Add(metadata);
                     }
                 }
-                
+
                 // Sort by version
                 result = result
                     .OrderByDescending(m => int.TryParse(m.Version, out var v) ? v : 0)
                     .ToList();
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -232,7 +232,7 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Gets models by stage
         /// </summary>
@@ -242,10 +242,10 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
             {
                 // Get all versions of the model
                 var versions = await GetModelVersionsAsync(modelName);
-                
+
                 // Filter by stage
                 var result = versions.Where(v => v.Stage == stage).ToList();
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -254,7 +254,7 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Deletes model metadata from the repository
         /// </summary>
@@ -267,26 +267,26 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     throw new ArgumentException("Model name is required", nameof(modelName));
                 }
-                
+
                 if (string.IsNullOrEmpty(version))
                 {
                     throw new ArgumentException("Version is required", nameof(version));
                 }
-                
+
                 // Create file path
                 var filePath = Path.Combine(_options.MetadataDirectory, modelName, $"{version}.json");
-                
+
                 // Check if file exists
                 if (!File.Exists(filePath))
                 {
-                    _logger.LogWarning("Metadata file not found for model {ModelName} version {Version} at {FilePath}", 
+                    _logger.LogWarning("Metadata file not found for model {ModelName} version {Version} at {FilePath}",
                         modelName, version, filePath);
                     return;
                 }
-                
+
                 // Delete the file
                 File.Delete(filePath);
-                
+
                 // Check if this was the latest version
                 var latestVersion = await GetLatestVersionAsync(modelName);
                 if (latestVersion == version)
@@ -307,18 +307,18 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                         }
                     }
                 }
-                
-                _logger.LogInformation("Deleted metadata for model {ModelName} version {Version}", 
+
+                _logger.LogInformation("Deleted metadata for model {ModelName} version {Version}",
                     modelName, version);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting metadata for model {ModelName} version {Version}", 
+                _logger.LogError(ex, "Error deleting metadata for model {ModelName} version {Version}",
                     modelName, version);
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Saves a model to the repository
         /// </summary>
@@ -330,23 +330,23 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     throw new ArgumentException("Model path is required", nameof(modelPath));
                 }
-                
+
                 if (modelBytes == null || modelBytes.Length == 0)
                 {
                     throw new ArgumentException("Model bytes are required", nameof(modelBytes));
                 }
-                
+
                 // Ensure directory exists
                 var directory = Path.GetDirectoryName(modelPath);
                 if (!string.IsNullOrEmpty(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
-                
+
                 // Write model bytes to file
                 await File.WriteAllBytesAsync(modelPath, modelBytes);
-                
-                _logger.LogInformation("Saved model bytes to {ModelPath} ({Size} bytes)", 
+
+                _logger.LogInformation("Saved model bytes to {ModelPath} ({Size} bytes)",
                     modelPath, modelBytes.Length);
             }
             catch (Exception ex)
@@ -355,7 +355,7 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Loads a model from the repository
         /// </summary>
@@ -367,20 +367,20 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     throw new ArgumentException("Model path is required", nameof(modelPath));
                 }
-                
+
                 // Check if file exists
                 if (!File.Exists(modelPath))
                 {
                     _logger.LogWarning("Model file not found at {ModelPath}", modelPath);
                     return null;
                 }
-                
+
                 // Read model bytes from file
                 var modelBytes = await File.ReadAllBytesAsync(modelPath);
-                
-                _logger.LogInformation("Loaded model bytes from {ModelPath} ({Size} bytes)", 
+
+                _logger.LogInformation("Loaded model bytes from {ModelPath} ({Size} bytes)",
                     modelPath, modelBytes.Length);
-                
+
                 return modelBytes;
             }
             catch (Exception ex)
@@ -389,7 +389,7 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Deletes a model from the repository
         /// </summary>
@@ -401,19 +401,19 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     throw new ArgumentException("Model path is required", nameof(modelPath));
                 }
-                
+
                 // Check if file exists
                 if (!File.Exists(modelPath))
                 {
                     _logger.LogWarning("Model file not found at {ModelPath}", modelPath);
                     return Task.CompletedTask;
                 }
-                
+
                 // Delete the file
                 File.Delete(modelPath);
-                
+
                 _logger.LogInformation("Deleted model file at {ModelPath}", modelPath);
-                
+
                 return Task.CompletedTask;
             }
             catch (Exception ex)
@@ -422,28 +422,28 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 throw;
             }
         }
-        
+
         #region Private Methods
-        
+
         private async Task<string> GetLatestVersionAsync(string modelName)
         {
             // Create path to latest.json
             var latestFilePath = Path.Combine(_options.MetadataDirectory, modelName, "latest.json");
-            
+
             // Check if file exists
             if (!File.Exists(latestFilePath))
             {
-                _logger.LogWarning("Latest version file not found for model {ModelName} at {FilePath}", 
+                _logger.LogWarning("Latest version file not found for model {ModelName} at {FilePath}",
                     modelName, latestFilePath);
                 return null;
             }
-            
+
             // Read and deserialize the file
             try
             {
                 var json = await File.ReadAllTextAsync(latestFilePath);
                 var latestInfo = JsonSerializer.Deserialize<LatestVersionInfo>(json);
-                
+
                 return latestInfo.Version;
             }
             catch (Exception ex)
@@ -452,19 +452,19 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 return null;
             }
         }
-        
+
         private async Task UpdateLatestVersionAsync(string modelName, string version)
         {
             // Create path to latest.json
             var latestFilePath = Path.Combine(_options.MetadataDirectory, modelName, "latest.json");
-            
+
             // Create latest version info
             var latestInfo = new LatestVersionInfo
             {
                 Version = version,
                 UpdatedAt = DateTime.UtcNow
             };
-            
+
             // Serialize and write to file
             try
             {
@@ -472,10 +472,10 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 {
                     WriteIndented = true
                 });
-                
+
                 await File.WriteAllTextAsync(latestFilePath, json);
-                
-                _logger.LogInformation("Updated latest version for model {ModelName} to {Version}", 
+
+                _logger.LogInformation("Updated latest version for model {ModelName} to {Version}",
                     modelName, version);
             }
             catch (Exception ex)
@@ -484,16 +484,16 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
                 throw;
             }
         }
-        
+
         #endregion
-        
+
         private class LatestVersionInfo
         {
             public string Version { get; set; }
             public DateTime UpdatedAt { get; set; }
         }
     }
-    
+
     /// <summary>
     /// Options for model repository
     /// </summary>
@@ -503,7 +503,7 @@ namespace GenericDataPlatform.ML.Services.Infrastructure
         /// Directory for model metadata
         /// </summary>
         public string MetadataDirectory { get; set; } = "data/models/metadata";
-        
+
         /// <summary>
         /// Directory for model files
         /// </summary>
