@@ -2,16 +2,9 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using Elsa;
-using Elsa.Activities.Http.Extensions;
-using Elsa.Dashboard.Extensions;
-using Elsa.Persistence.EntityFramework.Core.Extensions;
-using Elsa.Persistence.EntityFramework.SqlServer;
-using Elsa.Server.Api.Extensions;
 using GenericDataPlatform.Common.Configuration;
 using GenericDataPlatform.Common.Resilience;
-using GenericDataPlatform.ETL.ElsaWorkflows.Activities;
-using GenericDataPlatform.ETL.ElsaWorkflows.Services;
+using GenericDataPlatform.ETL.Workflows.Simple;
 using GenericDataPlatform.ETL.Enrichers;
 using GenericDataPlatform.ETL.Extractors.Base;
 using GenericDataPlatform.ETL.Extractors.Rest;
@@ -28,7 +21,7 @@ using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Monitoring;
 using GenericDataPlatform.ETL.Workflows.Repositories;
 using GenericDataPlatform.ETL.Workflows.Tracking;
-using GenericDataPlatform.Security.Services;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -61,7 +54,7 @@ builder.Services.AddSwaggerGen(c =>
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
 // Default HTTP client with resilience policies
-builder.Services.AddHttpClient()
+builder.Services.AddHttpClient("DefaultClient")
     .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetRetryPolicy(logger))
     .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetCircuitBreakerPolicy(logger))
     .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetTimeoutPolicy(logger));
@@ -97,32 +90,8 @@ builder.Services.AddScoped<IEnricher, LookupEnricher>();
 // Loaders
 builder.Services.AddScoped<ILoader, DatabaseLoader>();
 
-// Configure Elsa Workflows
-// Add Elsa services
-builder.Services
-    .AddElsa(options => options
-        .UseEntityFrameworkPersistence(ef => ef.UseSqlServer(
-            builder.Configuration.GetConnectionString("ElsaDb"),
-            sqlOptions => sqlOptions.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)))
-        .AddConsoleActivities()
-        .AddHttpActivities()
-        .AddQuartzTemporalActivities()
-        .AddWorkflowsFrom<Program>()
-    );
-
-// Add custom ETL activities
-builder.Services.AddActivity<ExtractActivity>()
-    .AddActivity<TransformActivity>()
-    .AddActivity<LoadActivity>()
-    .AddActivity<ValidateActivity>()
-    .AddActivity<EnrichActivity>()
-    .AddActivity<BranchActivity>();
-
-// Add Elsa API endpoints
-builder.Services.AddElsaApiEndpoints();
-
-// Add Elsa Dashboard
-builder.Services.AddElsaDashboard();
+// Register workflow repositories and services
+builder.Services.AddScoped<IWorkflowEngine, SimpleWorkflowEngine>();
 
 // Configure workflow options
 builder.Services.Configure<WorkflowOptions>(builder.Configuration.GetSection("WorkflowOptions"));
@@ -132,18 +101,19 @@ var workflowLogger = builder.Services.BuildServiceProvider().GetRequiredService<
 builder.Services.AddSingleton<IAsyncPolicy>(SqlServerResiliencePolicies.GetCombinedAsyncPolicy(workflowLogger));
 
 // Register workflow repositories and services
-builder.Services.AddScoped<IWorkflowRepository, DatabaseWorkflowRepository>();
-builder.Services.AddScoped<IWorkflowMonitor, WorkflowMonitor>();
-builder.Services.AddScoped<IWorkflowEngine, WorkflowEngine>();
-builder.Services.AddScoped<IEtlWorkflowService, EtlWorkflowService>();
-builder.Services.AddScoped<IWorkflowDefinitionBuilder, WorkflowDefinitionBuilder>();
+builder.Services.AddScoped<IWorkflowRepository, InMemoryWorkflowRepository>();
+builder.Services.AddScoped<GenericDataPlatform.ETL.Workflows.Monitoring.IWorkflowMonitor, BasicMonitor>();
+builder.Services.AddScoped<IWorkflowEngine, SimpleWorkflowEngine>();
+builder.Services.AddScoped<IEtlWorkflowService, SimpleEtlWorkflowService>();
+builder.Services.AddScoped<IWorkflowDefinitionBuilder, SimpleWorkflowDefinitionBuilder>();
+builder.Services.AddScoped<IDataLineageService, SimpleDataLineageService>();
 
-// Register lineage tracking services
-builder.Services.AddHttpClient<IDataLineageService, DataLineageService>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:SecurityService"] ?? "https://localhost:5001");
-});
-builder.Services.AddScoped<ILineageTracker, LineageTracker>();
+// Comment out the HTTP client registration for IDataLineageService since we're using a simple implementation
+// builder.Services.AddHttpClient<IDataLineageService, DataLineageService>(client =>
+// {
+//     client.BaseAddress = new Uri(builder.Configuration["ServiceEndpoints:SecurityService"] ?? "https://localhost:5001");
+// });
+builder.Services.AddScoped<ILineageTracker, SimpleLineageTracker>();
 
 var app = builder.Build();
 
@@ -161,17 +131,11 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-// Map Elsa API endpoints
-app.UseHttpActivities();
+// Map API endpoints
 app.UseRouting();
 app.UseEndpoints(endpoints =>
 {
-    // Elsa API Endpoints
     endpoints.MapControllers();
-    endpoints.MapElsaApiEndpoints();
-
-    // Elsa Dashboard
-    endpoints.MapFallbackToPage("/_Host");
 });
 
 app.Run();

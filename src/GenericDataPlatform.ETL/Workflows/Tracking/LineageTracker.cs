@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GenericDataPlatform.ETL.Workflows.Models;
-using GenericDataPlatform.Security.Models.DataLineage;
-using GenericDataPlatform.Security.Services;
 using Microsoft.Extensions.Logging;
 
 namespace GenericDataPlatform.ETL.Workflows.Tracking
@@ -30,11 +28,11 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
             try
             {
                 _logger.LogInformation("Tracking extraction event for step {StepId}", step.Id);
-                
+
                 // Get source information from step configuration
                 string sourceType = GetConfigValue<string>(step.Configuration, "extractorType");
                 string sourceLocation = GetConfigValue<string>(step.Configuration, "source") ?? context.Source;
-                
+
                 // Create source entity if it doesn't exist
                 var sourceEntity = new DataEntity
                 {
@@ -47,7 +45,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["stepId"] = step.Id
                     }
                 };
-                
+
                 // Create output entity
                 var outputEntity = new DataEntity
                 {
@@ -61,12 +59,12 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["timestamp"] = DateTime.UtcNow
                     }
                 };
-                
+
                 // Add schema information if available
                 if (output != null)
                 {
                     outputEntity.Properties["dataType"] = output.GetType().Name;
-                    
+
                     // Add sample data if it's a collection
                     if (output is System.Collections.IEnumerable enumerable)
                     {
@@ -78,7 +76,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                             sample.Add(enumerator.Current);
                             count++;
                         }
-                        
+
                         outputEntity.Properties["sampleData"] = sample;
                         outputEntity.Properties["isCollection"] = true;
                     }
@@ -88,11 +86,11 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         outputEntity.Properties["isCollection"] = false;
                     }
                 }
-                
+
                 // Save entities
                 await _lineageService.SaveDataEntityAsync(sourceEntity);
                 await _lineageService.SaveDataEntityAsync(outputEntity);
-                
+
                 // Create lineage event
                 var lineageEvent = new LineageEvent
                 {
@@ -108,25 +106,25 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["extractorType"] = sourceType
                     }
                 };
-                
+
                 // Record lineage event
                 await _lineageService.RecordLineageEventAsync(lineageEvent);
-                
+
                 // Store entity IDs in context for later use
                 if (context.Metadata == null)
                 {
                     context.Metadata = new Dictionary<string, object>();
                 }
-                
+
                 if (!context.Metadata.ContainsKey("lineage"))
                 {
                     context.Metadata["lineage"] = new Dictionary<string, object>();
                 }
-                
+
                 var lineageMetadata = (Dictionary<string, object>)context.Metadata["lineage"];
                 lineageMetadata[$"step_{step.Id}_sourceEntityId"] = sourceEntity.Id;
                 lineageMetadata[$"step_{step.Id}_outputEntityId"] = outputEntity.Id;
-                
+
                 _logger.LogInformation("Tracked extraction event for step {StepId}", step.Id);
             }
             catch (Exception ex)
@@ -143,13 +141,13 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
             try
             {
                 _logger.LogInformation("Tracking transformation event for step {StepId}", step.Id);
-                
+
                 // Get input entity ID from context
                 string inputEntityId = null;
                 if (step.DependsOn != null && step.DependsOn.Count > 0)
                 {
                     var dependencyId = step.DependsOn[0];
-                    if (context.Metadata != null && 
+                    if (context.Metadata != null &&
                         context.Metadata.TryGetValue("lineage", out var lineageObj) &&
                         lineageObj is Dictionary<string, object> lineageMetadata &&
                         lineageMetadata.TryGetValue($"step_{dependencyId}_outputEntityId", out var entityIdObj))
@@ -157,7 +155,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         inputEntityId = entityIdObj.ToString();
                     }
                 }
-                
+
                 // If input entity ID is not found, create a new input entity
                 DataEntity inputEntity;
                 if (inputEntityId == null)
@@ -174,13 +172,13 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                             ["timestamp"] = DateTime.UtcNow
                         }
                     };
-                    
+
                     // Add schema information if available
                     if (input != null)
                     {
                         inputEntity.Properties["dataType"] = input.GetType().Name;
                     }
-                    
+
                     // Save entity
                     await _lineageService.SaveDataEntityAsync(inputEntity);
                 }
@@ -194,10 +192,10 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         return;
                     }
                 }
-                
+
                 // Get transformation type from step configuration
                 string transformationType = GetConfigValue<string>(step.Configuration, "transformerType");
-                
+
                 // Create output entity
                 var outputEntity = new DataEntity
                 {
@@ -212,12 +210,12 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["timestamp"] = DateTime.UtcNow
                     }
                 };
-                
+
                 // Add schema information if available
                 if (output != null)
                 {
                     outputEntity.Properties["dataType"] = output.GetType().Name;
-                    
+
                     // Add sample data if it's a collection
                     if (output is System.Collections.IEnumerable enumerable)
                     {
@@ -229,7 +227,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                             sample.Add(enumerator.Current);
                             count++;
                         }
-                        
+
                         outputEntity.Properties["sampleData"] = sample;
                         outputEntity.Properties["isCollection"] = true;
                     }
@@ -239,10 +237,10 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         outputEntity.Properties["isCollection"] = false;
                     }
                 }
-                
+
                 // Save entity
                 await _lineageService.SaveDataEntityAsync(outputEntity);
-                
+
                 // Create lineage event
                 var lineageEvent = new LineageEvent
                 {
@@ -258,31 +256,31 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["transformationType"] = transformationType
                     }
                 };
-                
+
                 // Add transformation details if available
                 if (step.Configuration.TryGetValue("configuration", out var configObj) && configObj != null)
                 {
                     lineageEvent.Properties["transformationConfig"] = configObj;
                 }
-                
+
                 // Record lineage event
                 await _lineageService.RecordLineageEventAsync(lineageEvent);
-                
+
                 // Store entity IDs in context for later use
                 if (context.Metadata == null)
                 {
                     context.Metadata = new Dictionary<string, object>();
                 }
-                
+
                 if (!context.Metadata.ContainsKey("lineage"))
                 {
                     context.Metadata["lineage"] = new Dictionary<string, object>();
                 }
-                
+
                 var lineageMetadata = (Dictionary<string, object>)context.Metadata["lineage"];
                 lineageMetadata[$"step_{step.Id}_inputEntityId"] = inputEntity.Id;
                 lineageMetadata[$"step_{step.Id}_outputEntityId"] = outputEntity.Id;
-                
+
                 _logger.LogInformation("Tracked transformation event for step {StepId}", step.Id);
             }
             catch (Exception ex)
@@ -299,13 +297,13 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
             try
             {
                 _logger.LogInformation("Tracking loading event for step {StepId}", step.Id);
-                
+
                 // Get input entity ID from context
                 string inputEntityId = null;
                 if (step.DependsOn != null && step.DependsOn.Count > 0)
                 {
                     var dependencyId = step.DependsOn[0];
-                    if (context.Metadata != null && 
+                    if (context.Metadata != null &&
                         context.Metadata.TryGetValue("lineage", out var lineageObj) &&
                         lineageObj is Dictionary<string, object> lineageMetadata &&
                         lineageMetadata.TryGetValue($"step_{dependencyId}_outputEntityId", out var entityIdObj))
@@ -313,7 +311,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         inputEntityId = entityIdObj.ToString();
                     }
                 }
-                
+
                 // If input entity ID is not found, create a new input entity
                 DataEntity inputEntity;
                 if (inputEntityId == null)
@@ -330,13 +328,13 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                             ["timestamp"] = DateTime.UtcNow
                         }
                     };
-                    
+
                     // Add schema information if available
                     if (input != null)
                     {
                         inputEntity.Properties["dataType"] = input.GetType().Name;
                     }
-                    
+
                     // Save entity
                     await _lineageService.SaveDataEntityAsync(inputEntity);
                 }
@@ -350,10 +348,10 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         return;
                     }
                 }
-                
+
                 // Get loader type from step configuration
                 string loaderType = GetConfigValue<string>(step.Configuration, "loaderType");
-                
+
                 // Create target entity
                 var targetEntity = new DataEntity
                 {
@@ -367,10 +365,10 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["timestamp"] = DateTime.UtcNow
                     }
                 };
-                
+
                 // Save entity
                 await _lineageService.SaveDataEntityAsync(targetEntity);
-                
+
                 // Create lineage event
                 var lineageEvent = new LineageEvent
                 {
@@ -387,25 +385,25 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                         ["targetLocation"] = targetLocation
                     }
                 };
-                
+
                 // Record lineage event
                 await _lineageService.RecordLineageEventAsync(lineageEvent);
-                
+
                 // Store entity IDs in context for later use
                 if (context.Metadata == null)
                 {
                     context.Metadata = new Dictionary<string, object>();
                 }
-                
+
                 if (!context.Metadata.ContainsKey("lineage"))
                 {
                     context.Metadata["lineage"] = new Dictionary<string, object>();
                 }
-                
+
                 var lineageMetadata = (Dictionary<string, object>)context.Metadata["lineage"];
                 lineageMetadata[$"step_{step.Id}_inputEntityId"] = inputEntity.Id;
                 lineageMetadata[$"step_{step.Id}_targetEntityId"] = targetEntity.Id;
-                
+
                 _logger.LogInformation("Tracked loading event for step {StepId}", step.Id);
             }
             catch (Exception ex)
@@ -425,7 +423,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                 {
                     return typedValue;
                 }
-                
+
                 try
                 {
                     return (T)Convert.ChangeType(value, typeof(T));
@@ -435,7 +433,7 @@ namespace GenericDataPlatform.ETL.Workflows.Tracking
                     return default;
                 }
             }
-            
+
             return default;
         }
     }

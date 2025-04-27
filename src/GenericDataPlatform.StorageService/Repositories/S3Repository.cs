@@ -18,7 +18,7 @@ namespace GenericDataPlatform.StorageService.Repositories
         private readonly IAmazonS3 _s3Client;
         private readonly IOptions<S3Options> _options;
         private readonly ILogger<S3Repository> _logger;
-        
+
         public S3Repository(
             IAmazonS3 s3Client,
             IOptions<S3Options> options,
@@ -28,14 +28,14 @@ namespace GenericDataPlatform.StorageService.Repositories
             _options = options;
             _logger = logger;
         }
-        
+
         public async Task<string> StoreAsync(Stream dataStream, StorageMetadata metadata)
         {
             try
             {
                 // Generate a path based on metadata
                 var path = GeneratePath(metadata);
-                
+
                 // Create a put request
                 var putRequest = new PutObjectRequest
                 {
@@ -44,16 +44,19 @@ namespace GenericDataPlatform.StorageService.Repositories
                     InputStream = dataStream,
                     ContentType = metadata.ContentType
                 };
-                
+
                 // Add metadata as headers
-                foreach (var (key, value) in metadata.Properties)
+                if (metadata.Properties != null)
                 {
-                    putRequest.Metadata.Add(key, value);
+                    foreach (var entry in metadata.Properties)
+                    {
+                        putRequest.Metadata.Add(entry.Key, entry.Value);
+                    }
                 }
-                
+
                 // Upload to S3
                 await _s3Client.PutObjectAsync(putRequest);
-                
+
                 // Return the generated path
                 return path;
             }
@@ -63,7 +66,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<Stream> RetrieveAsync(string path)
         {
             try
@@ -73,14 +76,14 @@ namespace GenericDataPlatform.StorageService.Repositories
                     BucketName = _options.Value.BucketName,
                     Key = path
                 };
-                
+
                 var response = await _s3Client.GetObjectAsync(getRequest);
-                
+
                 // Create a memory stream to detach from the response
                 var memoryStream = new MemoryStream();
                 await response.ResponseStream.CopyToAsync(memoryStream);
                 memoryStream.Position = 0;
-                
+
                 return memoryStream;
             }
             catch (Exception ex)
@@ -89,7 +92,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<StorageMetadata> GetMetadataAsync(string path)
         {
             try
@@ -99,9 +102,9 @@ namespace GenericDataPlatform.StorageService.Repositories
                     BucketName = _options.Value.BucketName,
                     Key = path
                 };
-                
+
                 var response = await _s3Client.GetObjectMetadataAsync(metadataRequest);
-                
+
                 // Extract metadata from response
                 var metadata = new StorageMetadata
                 {
@@ -112,13 +115,13 @@ namespace GenericDataPlatform.StorageService.Repositories
                     CreatedAt = response.LastModified,
                     Properties = new Dictionary<string, string>()
                 };
-                
+
                 // Add custom metadata
                 foreach (var key in response.Metadata.Keys)
                 {
                     metadata.Properties[key] = response.Metadata[key];
                 }
-                
+
                 return metadata;
             }
             catch (Exception ex)
@@ -127,7 +130,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<IEnumerable<StorageItem>> ListAsync(string prefix, bool recursive = false)
         {
             try
@@ -139,12 +142,12 @@ namespace GenericDataPlatform.StorageService.Repositories
                     Prefix = prefix,
                     Delimiter = recursive ? null : "/"
                 };
-                
+
                 ListObjectsV2Response response;
                 do
                 {
                     response = await _s3Client.ListObjectsV2Async(request);
-                    
+
                     // Add directories (common prefixes)
                     foreach (var commonPrefix in response.CommonPrefixes)
                     {
@@ -161,7 +164,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                             }
                         });
                     }
-                    
+
                     // Add files
                     foreach (var s3Object in response.S3Objects)
                     {
@@ -170,7 +173,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                         {
                             continue;
                         }
-                        
+
                         items.Add(new StorageItem
                         {
                             Path = s3Object.Key,
@@ -185,11 +188,11 @@ namespace GenericDataPlatform.StorageService.Repositories
                             }
                         });
                     }
-                    
+
                     request.ContinuationToken = response.NextContinuationToken;
                 }
                 while (response.IsTruncated);
-                
+
                 return items;
             }
             catch (Exception ex)
@@ -198,7 +201,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<bool> DeleteAsync(string path)
         {
             try
@@ -208,7 +211,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                     BucketName = _options.Value.BucketName,
                     Key = path
                 };
-                
+
                 await _s3Client.DeleteObjectAsync(deleteRequest);
                 return true;
             }
@@ -218,7 +221,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<string> CopyAsync(string sourcePath, string destinationPath)
         {
             try
@@ -230,7 +233,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                     DestinationBucket = _options.Value.BucketName,
                     DestinationKey = destinationPath
                 };
-                
+
                 await _s3Client.CopyObjectAsync(copyRequest);
                 return destinationPath;
             }
@@ -240,7 +243,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<StorageStatistics> GetStatisticsAsync(string prefix = null)
         {
             try
@@ -252,18 +255,18 @@ namespace GenericDataPlatform.StorageService.Repositories
                     ItemsByType = new Dictionary<string, long>(),
                     SizeByType = new Dictionary<string, long>()
                 };
-                
+
                 var request = new ListObjectsV2Request
                 {
                     BucketName = _options.Value.BucketName,
                     Prefix = prefix
                 };
-                
+
                 ListObjectsV2Response response;
                 do
                 {
                     response = await _s3Client.ListObjectsV2Async(request);
-                    
+
                     foreach (var s3Object in response.S3Objects)
                     {
                         // Skip directories (objects ending with /)
@@ -271,30 +274,30 @@ namespace GenericDataPlatform.StorageService.Repositories
                         {
                             continue;
                         }
-                        
+
                         statistics.TotalItems++;
                         statistics.TotalSize += s3Object.Size;
-                        
+
                         var extension = Path.GetExtension(s3Object.Key).ToLowerInvariant();
                         if (string.IsNullOrEmpty(extension))
                         {
                             extension = "unknown";
                         }
-                        
+
                         if (!statistics.ItemsByType.ContainsKey(extension))
                         {
                             statistics.ItemsByType[extension] = 0;
                             statistics.SizeByType[extension] = 0;
                         }
-                        
+
                         statistics.ItemsByType[extension]++;
                         statistics.SizeByType[extension] += s3Object.Size;
                     }
-                    
+
                     request.ContinuationToken = response.NextContinuationToken;
                 }
                 while (response.IsTruncated);
-                
+
                 return statistics;
             }
             catch (Exception ex)
@@ -303,7 +306,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         public async Task<QueryResult> QueryAsync(DataQuery query)
         {
             try
@@ -313,7 +316,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 {
                     throw new ArgumentNullException(nameof(query));
                 }
-                
+
                 // Initialize result
                 var result = new QueryResult
                 {
@@ -322,10 +325,10 @@ namespace GenericDataPlatform.StorageService.Repositories
                     PageNumber = query.PageNumber,
                     PageSize = query.PageSize
                 };
-                
+
                 // Get the prefix to search in
                 string prefix = query.Prefix ?? string.Empty;
-                
+
                 // List all objects with the given prefix
                 var listRequest = new ListObjectsV2Request
                 {
@@ -333,11 +336,11 @@ namespace GenericDataPlatform.StorageService.Repositories
                     Prefix = prefix,
                     MaxKeys = 1000 // Use a large value to minimize API calls
                 };
-                
+
                 // Collect all matching objects
                 var allObjects = new List<S3Object>();
                 ListObjectsV2Response listResponse;
-                
+
                 do
                 {
                     listResponse = await _s3Client.ListObjectsV2Async(listRequest);
@@ -345,14 +348,14 @@ namespace GenericDataPlatform.StorageService.Repositories
                     listRequest.ContinuationToken = listResponse.NextContinuationToken;
                 }
                 while (listResponse.IsTruncated);
-                
+
                 // Filter objects based on query conditions
                 var filteredObjects = allObjects;
-                
+
                 // Apply filters if specified
                 if (query.Filters != null && query.Filters.Any())
                 {
-                    filteredObjects = filteredObjects.Where(obj => 
+                    filteredObjects = filteredObjects.Where(obj =>
                     {
                         // Get object metadata
                         var metadataTask = _s3Client.GetObjectMetadataAsync(new GetObjectMetadataRequest
@@ -362,13 +365,14 @@ namespace GenericDataPlatform.StorageService.Repositories
                         });
                         metadataTask.Wait(); // Synchronously wait for metadata
                         var metadata = metadataTask.Result;
-                        
+
                         // Check if all filters match
                         foreach (var filter in query.Filters)
                         {
                             // Check metadata properties
-                            if (metadata.Metadata.TryGetValue(filter.Field, out var value))
+                            if (metadata.Metadata.Keys.Contains(filter.Field))
                             {
+                                var value = metadata.Metadata[filter.Field];
                                 if (!MatchesFilter(value, filter.Operator, filter.Value))
                                 {
                                     return false;
@@ -402,11 +406,11 @@ namespace GenericDataPlatform.StorageService.Repositories
                                 return false;
                             }
                         }
-                        
+
                         return true;
                     }).ToList();
                 }
-                
+
                 // Apply sorting if specified
                 if (!string.IsNullOrEmpty(query.SortField))
                 {
@@ -417,16 +421,16 @@ namespace GenericDataPlatform.StorageService.Repositories
                     // Default sort by last modified date
                     filteredObjects = filteredObjects.OrderByDescending(obj => obj.LastModified).ToList();
                 }
-                
+
                 // Get total count
                 result.TotalCount = filteredObjects.Count;
-                
+
                 // Apply pagination
                 var paginatedObjects = filteredObjects
                     .Skip((query.PageNumber - 1) * query.PageSize)
                     .Take(query.PageSize)
                     .ToList();
-                
+
                 // Load content for each object and convert to DataRecord
                 foreach (var obj in paginatedObjects)
                 {
@@ -436,20 +440,20 @@ namespace GenericDataPlatform.StorageService.Repositories
                         BucketName = _options.Value.BucketName,
                         Key = obj.Key
                     };
-                    
+
                     using var response = await _s3Client.GetObjectAsync(getRequest);
                     using var reader = new StreamReader(response.ResponseStream);
                     var content = await reader.ReadToEndAsync();
-                    
+
                     // Try to parse content as JSON
                     try
                     {
                         var jsonDoc = JsonDocument.Parse(content);
                         var data = new Dictionary<string, object>();
-                        
+
                         // Extract properties from JSON
                         ExtractJsonProperties(jsonDoc.RootElement, data);
-                        
+
                         // Create DataRecord
                         var record = new DataRecord
                         {
@@ -468,7 +472,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                             UpdatedAt = obj.LastModified,
                             Version = "1.0"
                         };
-                        
+
                         result.Records.Add(record);
                     }
                     catch (JsonException)
@@ -494,11 +498,11 @@ namespace GenericDataPlatform.StorageService.Repositories
                             UpdatedAt = obj.LastModified,
                             Version = "1.0"
                         };
-                        
+
                         result.Records.Add(record);
                     }
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
@@ -507,29 +511,29 @@ namespace GenericDataPlatform.StorageService.Repositories
                 throw;
             }
         }
-        
+
         private string GeneratePath(StorageMetadata metadata)
         {
             // Generate a path based on metadata
             var path = string.Empty;
-            
+
             // Use the specified path if available
-            if (metadata.Properties.TryGetValue("path", out var specifiedPath))
+            if (metadata.Properties != null && metadata.Properties.ContainsKey("path"))
             {
-                path = specifiedPath;
+                path = metadata.Properties["path"];
             }
             else
             {
                 // Generate a path based on date and content type
                 var date = metadata.CreatedAt.ToString("yyyy/MM/dd");
                 var contentTypeFolder = metadata.ContentType.Split('/')[0];
-                
+
                 path = $"{contentTypeFolder}/{date}/{metadata.Id}_{metadata.Filename}";
             }
-            
+
             return path;
         }
-        
+
         private string GetContentTypeFromExtension(string extension)
         {
             return extension.ToLowerInvariant() switch
@@ -550,7 +554,7 @@ namespace GenericDataPlatform.StorageService.Repositories
                 _ => "application/octet-stream"
             };
         }
-        
+
         private bool MatchesFilter(string value, string op, string filterValue)
         {
             return op.ToLowerInvariant() switch
@@ -567,36 +571,36 @@ namespace GenericDataPlatform.StorageService.Repositories
                 _ => false
             };
         }
-        
+
         private IEnumerable<S3Object> SortObjects(IEnumerable<S3Object> objects, string sortField, string sortDirection)
         {
-            var isAscending = string.IsNullOrEmpty(sortDirection) || 
+            var isAscending = string.IsNullOrEmpty(sortDirection) ||
                               sortDirection.Equals("asc", StringComparison.OrdinalIgnoreCase);
-            
+
             return sortField.ToLowerInvariant() switch
             {
-                "key" => isAscending ? 
-                    objects.OrderBy(o => o.Key) : 
+                "key" => isAscending ?
+                    objects.OrderBy(o => o.Key) :
                     objects.OrderByDescending(o => o.Key),
-                
-                "size" => isAscending ? 
-                    objects.OrderBy(o => o.Size) : 
+
+                "size" => isAscending ?
+                    objects.OrderBy(o => o.Size) :
                     objects.OrderByDescending(o => o.Size),
-                
-                "lastmodified" => isAscending ? 
-                    objects.OrderBy(o => o.LastModified) : 
+
+                "lastmodified" => isAscending ?
+                    objects.OrderBy(o => o.LastModified) :
                     objects.OrderByDescending(o => o.LastModified),
-                
-                "storageclass" => isAscending ? 
-                    objects.OrderBy(o => o.StorageClass) : 
+
+                "storageclass" => isAscending ?
+                    objects.OrderBy(o => o.StorageClass) :
                     objects.OrderByDescending(o => o.StorageClass),
-                
-                _ => isAscending ? 
-                    objects.OrderBy(o => o.LastModified) : 
+
+                _ => isAscending ?
+                    objects.OrderBy(o => o.LastModified) :
                     objects.OrderByDescending(o => o.LastModified)
             };
         }
-        
+
         private void ExtractJsonProperties(JsonElement element, Dictionary<string, object> data, string prefix = "")
         {
             switch (element.ValueKind)
@@ -604,23 +608,23 @@ namespace GenericDataPlatform.StorageService.Repositories
                 case JsonValueKind.Object:
                     foreach (var property in element.EnumerateObject())
                     {
-                        var propertyName = string.IsNullOrEmpty(prefix) ? 
-                            property.Name : 
+                        var propertyName = string.IsNullOrEmpty(prefix) ?
+                            property.Name :
                             $"{prefix}.{property.Name}";
-                        
+
                         ExtractJsonProperties(property.Value, data, propertyName);
                     }
                     break;
-                
+
                 case JsonValueKind.Array:
                     // For arrays, store the JSON string
                     data[prefix] = element.GetRawText();
                     break;
-                
+
                 case JsonValueKind.String:
                     data[prefix] = element.GetString();
                     break;
-                
+
                 case JsonValueKind.Number:
                     if (element.TryGetInt32(out var intValue))
                     {
@@ -639,22 +643,22 @@ namespace GenericDataPlatform.StorageService.Repositories
                         data[prefix] = element.GetRawText();
                     }
                     break;
-                
+
                 case JsonValueKind.True:
                     data[prefix] = true;
                     break;
-                
+
                 case JsonValueKind.False:
                     data[prefix] = false;
                     break;
-                
+
                 case JsonValueKind.Null:
                     data[prefix] = null;
                     break;
             }
         }
     }
-    
+
     public class S3Options
     {
         public string BucketName { get; set; }
@@ -662,7 +666,7 @@ namespace GenericDataPlatform.StorageService.Repositories
         public string AccessKey { get; set; }
         public string SecretKey { get; set; }
     }
-    
+
     public class DataQuery
     {
         public string SourceId { get; set; }
@@ -674,14 +678,14 @@ namespace GenericDataPlatform.StorageService.Repositories
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 50;
     }
-    
+
     public class QueryFilter
     {
         public string Field { get; set; }
         public string Operator { get; set; }
         public string Value { get; set; }
     }
-    
+
     public class QueryResult
     {
         public List<DataRecord> Records { get; set; }

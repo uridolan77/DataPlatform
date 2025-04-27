@@ -16,7 +16,7 @@ namespace GenericDataPlatform.StorageService.Repositories
         Task<StorageStatistics> GetStatisticsAsync(string prefix = null);
     }
 
-    public class StorageMetadata
+    public record StorageMetadata
     {
         public string Id { get; set; }
         public string SourceId { get; set; }
@@ -28,7 +28,8 @@ namespace GenericDataPlatform.StorageService.Repositories
         public string StorageTier { get; set; }
         public bool IsCompressed { get; set; }
         public bool IsEncrypted { get; set; }
-        public Dictionary<string, string> CustomMetadata { get; set; }
+        public Dictionary<string, string> CustomMetadata { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
     }
 
     public class StorageItem

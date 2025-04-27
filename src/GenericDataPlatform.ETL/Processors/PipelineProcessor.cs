@@ -520,9 +520,9 @@ namespace GenericDataPlatform.ETL.Processors
 
     public class ValidationException : Exception
     {
-        public ValidationResult ValidationResult { get; }
+        public Validators.ValidationResult ValidationResult { get; }
 
-        public ValidationException(string message, ValidationResult validationResult) : base(message)
+        public ValidationException(string message, Validators.ValidationResult validationResult) : base(message)
         {
             ValidationResult = validationResult;
         }

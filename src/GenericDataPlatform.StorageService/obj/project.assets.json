@@ -117,6 +117,22 @@
           }
         }
       },
+      "AWSSDK.S3/3.7.304.7": {
+        "type": "package",
+        "dependencies": {
+          "AWSSDK.Core": "[3.7.300.18, 4.0.0)"
+        },
+        "compile": {
+          "lib/net8.0/AWSSDK.S3.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.S3.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "AWSSDK.SecretsManager/3.7.302.29": {
         "type": "package",
         "dependencies": {
@@ -3545,6 +3561,38 @@
         "lib/netstandard2.0/AWSSDK.Core.pdb",
         "lib/netstandard2.0/AWSSDK.Core.xml",
         "tools/account-management.ps1"
+      ]
+    },
+    "AWSSDK.S3/3.7.304.7": {
+      "sha512": "48N8DacscZsZOMN/11JpRBxiU7OsHzcQTFusFkEclBlIK9pPdNOZIY5fK0BNlJJv1F4lEFHa6Ywx8rc6G44ttw==",
+      "type": "package",
+      "path": "awssdk.s3/3.7.304.7",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "analyzers/dotnet/cs/AWSSDK.S3.CodeAnalysis.dll",
+        "analyzers/dotnet/cs/SharedAnalysisCode.dll",
+        "awssdk.s3.3.7.304.7.nupkg.sha512",
+        "awssdk.s3.nuspec",
+        "images/AWSLogo.png",
+        "lib/net35/AWSSDK.S3.dll",
+        "lib/net35/AWSSDK.S3.pdb",
+        "lib/net35/AWSSDK.S3.xml",
+        "lib/net45/AWSSDK.S3.dll",
+        "lib/net45/AWSSDK.S3.pdb",
+        "lib/net45/AWSSDK.S3.xml",
+        "lib/net8.0/AWSSDK.S3.dll",
+        "lib/net8.0/AWSSDK.S3.pdb",
+        "lib/net8.0/AWSSDK.S3.xml",
+        "lib/netcoreapp3.1/AWSSDK.S3.dll",
+        "lib/netcoreapp3.1/AWSSDK.S3.pdb",
+        "lib/netcoreapp3.1/AWSSDK.S3.xml",
+        "lib/netstandard2.0/AWSSDK.S3.dll",
+        "lib/netstandard2.0/AWSSDK.S3.pdb",
+        "lib/netstandard2.0/AWSSDK.S3.xml",
+        "tools/install.ps1",
+        "tools/uninstall.ps1"
       ]
     },
     "AWSSDK.SecretsManager/3.7.302.29": {
@@ -9138,6 +9186,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "AWSSDK.S3 >= 3.7.304.7",
       "GenericDataPlatform.Common >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.0",
       "Microsoft.Extensions.Http.Polly >= 9.0.0",
@@ -9164,6 +9213,7 @@
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
+        "C:\\dev\\DataPlatform\\NuGet.Config",
         "C:\\Users\\urido\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -9172,9 +9222,9 @@
         "net9.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
-        "https://api.nuget.org/v3/index.json": {}
+        "https://api.nuget.org/v3/index.json": {},
+        "https://www.myget.org/F/elsa/api/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
@@ -9202,6 +9252,11 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
+          "AWSSDK.S3": {
+            "target": "Package",
+            "version": "[3.7.304.7, )",
+            "versionCentrallyManaged": true
+          },
           "Microsoft.AspNetCore.OpenApi": {
             "target": "Package",
             "version": "[9.0.0, )",
@@ -9230,6 +9285,7 @@
           "AspNetCore.HealthChecks.Redis": "8.0.0",
           "AspNetCore.HealthChecks.SqlServer": "8.0.0",
           "AspNetCore.HealthChecks.Uris": "8.0.0",
+          "AWSSDK.S3": "3.7.304.7",
           "AWSSDK.SecretsManager": "3.7.302.29",
           "Azure.Identity": "1.10.4",
           "Azure.Security.KeyVault.Secrets": "4.5.0",
@@ -9345,6 +9401,14 @@
       }
     }
   },
+  "logs": [
+    {
+      "code": "NU1507",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "There are 2 package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: nuget.org, MyGet-Elsa"
+    }
+  ],
   "centralTransitiveDependencyGroups": {
     "net9.0": {
       "AWSSDK.SecretsManager": {

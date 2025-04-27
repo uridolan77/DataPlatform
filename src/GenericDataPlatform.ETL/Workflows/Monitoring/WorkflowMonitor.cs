@@ -18,7 +18,7 @@ namespace GenericDataPlatform.ETL.Workflows.Monitoring
         private readonly ILogger<WorkflowMonitor> _logger;
         private readonly WorkflowOptions _options;
         private readonly List<WorkflowTimelineEvent> _timelineEvents = new List<WorkflowTimelineEvent>();
-        
+
         public WorkflowMonitor(
             IWorkflowRepository repository,
             IOptions<WorkflowOptions> options,
@@ -28,7 +28,7 @@ namespace GenericDataPlatform.ETL.Workflows.Monitoring
             _options = options.Value;
             _logger = logger;
         }
-        
+
         /// <summary>
         /// Records a timeline event for a workflow execution
         /// </summary>
@@ -36,29 +36,35 @@ namespace GenericDataPlatform.ETL.Workflows.Monitoring
         {
             try
             {
+                // Generate an ID for the event if not provided
+                if (string.IsNullOrEmpty(timelineEvent.Id))
+                {
+                    timelineEvent.Id = Guid.NewGuid().ToString();
+                }
+
                 // Store the event in memory
                 lock (_timelineEvents)
                 {
                     _timelineEvents.Add(timelineEvent);
-                    
+
                     // Limit the number of events in memory
                     if (_timelineEvents.Count > 1000)
                     {
                         _timelineEvents.RemoveAt(0);
                     }
                 }
-                
+
                 // In a real implementation, this would store the event in a database
                 // For now, we'll just log it
-                _logger.LogInformation("Timeline event: {EventType} for execution {ExecutionId}, step {StepId}",
-                    timelineEvent.EventType, timelineEvent.ExecutionId, timelineEvent.StepId);
+                _logger.LogInformation("Timeline event: {EventType} for execution {ExecutionId}, activity {ActivityName}",
+                    timelineEvent.EventType, timelineEvent.ExecutionId, timelineEvent.ActivityName);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error recording timeline event");
             }
         }
-        
+
         /// <summary>
         /// Updates workflow metrics based on an execution
         /// </summary>
@@ -70,10 +76,10 @@ namespace GenericDataPlatform.ETL.Workflows.Monitoring
                 {
                     return;
                 }
-                
+
                 // Get current metrics
                 var metrics = await _repository.GetWorkflowMetricsAsync(execution.WorkflowId);
-                
+
                 // In a real implementation, this would update the metrics in a database
                 // For now, we'll just log it
                 _logger.LogInformation("Updated metrics for workflow {WorkflowId}: {SuccessfulExecutions} successful, {FailedExecutions} failed",
@@ -84,7 +90,7 @@ namespace GenericDataPlatform.ETL.Workflows.Monitoring
                 _logger.LogError(ex, "Error updating workflow metrics");
             }
         }
-        
+
         /// <summary>
         /// Gets workflow metrics
         /// </summary>
@@ -100,7 +106,7 @@ namespace GenericDataPlatform.ETL.Workflows.Monitoring
                 throw;
             }
         }
-        
+
         /// <summary>
         /// Gets timeline events for a workflow execution
         /// </summary>

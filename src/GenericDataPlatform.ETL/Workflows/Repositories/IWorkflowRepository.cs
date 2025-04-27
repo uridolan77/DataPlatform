@@ -15,7 +15,7 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
         Task<List<string>> GetWorkflowVersionsAsync(string id);
         Task<string> SaveWorkflowAsync(WorkflowDefinition workflow);
         Task<bool> DeleteWorkflowAsync(string id, string version = null);
-        
+
         // Workflow Execution Operations
         Task<WorkflowExecution> GetExecutionByIdAsync(string id);
         Task<List<WorkflowExecution>> GetExecutionHistoryAsync(string workflowId, int limit = 10);
@@ -23,9 +23,11 @@ namespace GenericDataPlatform.ETL.Workflows.Repositories
         Task<string> SaveExecutionAsync(WorkflowExecution execution);
         Task<bool> UpdateExecutionStatusAsync(string id, WorkflowExecutionStatus status);
         Task<bool> UpdateStepExecutionAsync(string executionId, WorkflowStepExecution stepExecution);
-        
+
         // Workflow Metrics Operations
         Task<WorkflowMetrics> GetWorkflowMetricsAsync(string workflowId);
+
+        // Workflow Execution Summary Operations
         Task<List<WorkflowExecutionSummary>> GetExecutionSummariesAsync(string workflowId, int limit = 10);
     }
 }

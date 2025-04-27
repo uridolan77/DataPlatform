@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "BAfBbI+d484=",
+  "dgSpecHash": "BaOEN2iX23k=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.StorageService\\GenericDataPlatform.StorageService.csproj",
   "expectedPackageFiles": [
@@ -11,6 +11,7 @@
     "C:\\Users\\urido\\.nuget\\packages\\aspnetcore.healthchecks.sqlserver\\8.0.0\\aspnetcore.healthchecks.sqlserver.8.0.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\aspnetcore.healthchecks.uris\\8.0.0\\aspnetcore.healthchecks.uris.8.0.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\awssdk.core\\3.7.302.15\\awssdk.core.3.7.302.15.nupkg.sha512",
+    "C:\\Users\\urido\\.nuget\\packages\\awssdk.s3\\3.7.304.7\\awssdk.s3.3.7.304.7.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\awssdk.secretsmanager\\3.7.302.29\\awssdk.secretsmanager.3.7.302.29.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\azure.core\\1.36.0\\azure.core.1.36.0.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\azure.identity\\1.10.4\\azure.identity.1.10.4.nupkg.sha512",
@@ -194,5 +195,12 @@
     "C:\\Users\\urido\\.nuget\\packages\\vaultsharp\\1.13.0.1\\vaultsharp.1.13.0.1.nupkg.sha512",
     "C:\\Users\\urido\\.nuget\\packages\\zstdsharp.port\\0.7.1\\zstdsharp.port.0.7.1.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1507",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "There are 2 package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: nuget.org, MyGet-Elsa"
+    }
+  ]
 }

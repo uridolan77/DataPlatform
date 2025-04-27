@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.ETL.Enrichers;
+using GenericDataPlatform.ETL.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -15,13 +16,13 @@ namespace GenericDataPlatform.ETL.Controllers
     {
         private readonly IEnumerable<IEnricher> _enrichers;
         private readonly ILogger<EnricherController> _logger;
-        
+
         public EnricherController(IEnumerable<IEnricher> enrichers, ILogger<EnricherController> logger)
         {
             _enrichers = enrichers;
             _logger = logger;
         }
-        
+
         [HttpGet]
         public ActionResult<IEnumerable<EnricherInfo>> GetEnrichers()
         {
@@ -32,20 +33,20 @@ namespace GenericDataPlatform.ETL.Controllers
                 Description = GetDescription(e.Type),
                 SupportedRules = GetSupportedRules(e.Type)
             });
-            
+
             return Ok(enrichers);
         }
-        
+
         [HttpGet("{type}")]
         public ActionResult<EnricherInfo> GetEnricher(string type)
         {
             var enricher = _enrichers.FirstOrDefault(e => e.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
-            
+
             if (enricher == null)
             {
                 return NotFound();
             }
-            
+
             var enricherInfo = new EnricherInfo
             {
                 Type = enricher.Type,
@@ -53,24 +54,24 @@ namespace GenericDataPlatform.ETL.Controllers
                 Description = GetDescription(enricher.Type),
                 SupportedRules = GetSupportedRules(enricher.Type)
             };
-            
+
             return Ok(enricherInfo);
         }
-        
+
         [HttpPost("enrich")]
         public async Task<IActionResult> Enrich([FromBody] EnrichRequest request)
         {
             try
             {
                 var enricher = _enrichers.FirstOrDefault(e => e.Type.Equals(request.EnricherType, StringComparison.OrdinalIgnoreCase));
-                
+
                 if (enricher == null)
                 {
                     return NotFound($"Enricher of type '{request.EnricherType}' not found");
                 }
-                
+
                 var result = await enricher.EnrichAsync(request.Input, request.Configuration, request.Source);
-                
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -79,7 +80,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
-        
+
         private string GetDisplayName(string type)
         {
             return type switch
@@ -89,7 +90,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 _ => type
             };
         }
-        
+
         private string GetDescription(string type)
         {
             return type switch
@@ -99,11 +100,11 @@ namespace GenericDataPlatform.ETL.Controllers
                 _ => $"Enrich data using {type}"
             };
         }
-        
+
         private List<EnricherRule> GetSupportedRules(string type)
         {
             var rules = new List<EnricherRule>();
-            
+
             switch (type.ToLowerInvariant())
             {
                 case "data":
@@ -203,7 +204,7 @@ namespace GenericDataPlatform.ETL.Controllers
                         }
                     });
                     break;
-                
+
                 case "lookup":
                     rules.Add(new EnricherRule
                     {
@@ -222,11 +223,11 @@ namespace GenericDataPlatform.ETL.Controllers
                     });
                     break;
             }
-            
+
             return rules;
         }
     }
-    
+
     public class EnricherInfo
     {
         public string Type { get; set; }
@@ -234,7 +235,7 @@ namespace GenericDataPlatform.ETL.Controllers
         public string Description { get; set; }
         public List<EnricherRule> SupportedRules { get; set; }
     }
-    
+
     public class EnricherRule
     {
         public string Name { get; set; }
@@ -242,15 +243,9 @@ namespace GenericDataPlatform.ETL.Controllers
         public string Description { get; set; }
         public List<RuleParameter> Parameters { get; set; }
     }
-    
-    public class RuleParameter
-    {
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
-        public string Type { get; set; }
-        public bool IsRequired { get; set; }
-    }
-    
+
+
+
     public class EnrichRequest
     {
         public string EnricherType { get; set; }

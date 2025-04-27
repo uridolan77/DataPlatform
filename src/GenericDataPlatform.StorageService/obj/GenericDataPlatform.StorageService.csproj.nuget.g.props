@@ -17,5 +17,6 @@
     <PkgGrpc_Tools Condition=" '$(PkgGrpc_Tools)' == '' ">C:\Users\urido\.nuget\packages\grpc.tools\2.59.0</PkgGrpc_Tools>
     <PkgAWSSDK_Core Condition=" '$(PkgAWSSDK_Core)' == '' ">C:\Users\urido\.nuget\packages\awssdk.core\3.7.302.15</PkgAWSSDK_Core>
     <PkgAWSSDK_SecretsManager Condition=" '$(PkgAWSSDK_SecretsManager)' == '' ">C:\Users\urido\.nuget\packages\awssdk.secretsmanager\3.7.302.29</PkgAWSSDK_SecretsManager>
+    <PkgAWSSDK_S3 Condition=" '$(PkgAWSSDK_S3)' == '' ">C:\Users\urido\.nuget\packages\awssdk.s3\3.7.304.7</PkgAWSSDK_S3>
   </PropertyGroup>
 </Project>

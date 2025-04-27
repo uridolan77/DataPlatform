@@ -10,15 +10,6 @@
   <ItemGroup>
     <PackageReference Include="CsvHelper" />
     <PackageReference Include="Dapper" />
-    <PackageReference Include="Elsa" />
-    <PackageReference Include="Elsa.Activities.Console" />
-    <PackageReference Include="Elsa.Activities.Http" />
-    <PackageReference Include="Elsa.Activities.Temporal.Quartz" />
-    <PackageReference Include="Elsa.Core" />
-    <PackageReference Include="Elsa.Dashboard" />
-    <PackageReference Include="Elsa.Designer.Components.Web" />
-    <PackageReference Include="Elsa.Persistence.EntityFramework.SqlServer" />
-    <PackageReference Include="Elsa.Server.Api" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <PackageReference Include="Microsoft.Extensions.Http" />

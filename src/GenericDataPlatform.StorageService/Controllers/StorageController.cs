@@ -27,11 +27,11 @@ namespace GenericDataPlatform.StorageService.Controllers
         }
 
         [HttpGet("files")]
-        public async Task<IActionResult> ListFiles(string bucket, string prefix = null, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> ListFiles(string bucket, string prefix = null, bool recursive = false, CancellationToken cancellationToken = default)
         {
             try
             {
-                var response = await _storageClient.ListFilesAsync(bucket, prefix, cancellationToken);
+                var response = await _storageClient.ListFilesAsync(bucket, prefix, recursive, cancellationToken);
                 return Ok(response);
             }
             catch (ApiException ex)
@@ -52,17 +52,18 @@ namespace GenericDataPlatform.StorageService.Controllers
             try
             {
                 // Get metadata first to determine content type
-                var metadata = await _storageClient.GetMetadataAsync(bucket, path, cancellationToken);
-                
+                var metadata = await _storageClient.GetMetadataAsync(path, cancellationToken);
+
                 // Create memory stream to hold the file content
                 var memoryStream = new MemoryStream();
-                
+
                 // Download the file
-                await _storageClient.DownloadFileAsync(bucket, path, memoryStream, cancellationToken);
-                
+                var downloadStream = await _storageClient.DownloadFileAsync(path, cancellationToken);
+                await downloadStream.CopyToAsync(memoryStream, cancellationToken);
+
                 // Reset the stream position to the beginning
                 memoryStream.Position = 0;
-                
+
                 // Return the file
                 return File(memoryStream, metadata.ContentType, Path.GetFileName(path));
             }
@@ -84,7 +85,9 @@ namespace GenericDataPlatform.StorageService.Controllers
             try
             {
                 using var stream = file.OpenReadStream();
-                var response = await _storageClient.UploadFileAsync(bucket, path, stream, cancellationToken);
+                var contentType = file.ContentType;
+                var filename = file.FileName;
+                var response = await _storageClient.UploadFileAsync(path, stream, contentType, filename, null, null, false, false, cancellationToken);
                 return Ok(response);
             }
             catch (ApiException ex)

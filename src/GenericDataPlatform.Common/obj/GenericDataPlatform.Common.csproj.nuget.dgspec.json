@@ -19,6 +19,7 @@
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+          "C:\\dev\\DataPlatform\\NuGet.Config",
           "C:\\Users\\urido\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -27,9 +28,9 @@
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://www.myget.org/F/elsa/api/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
@@ -386,6 +387,7 @@
             "AspNetCore.HealthChecks.Redis": "8.0.0",
             "AspNetCore.HealthChecks.SqlServer": "8.0.0",
             "AspNetCore.HealthChecks.Uris": "8.0.0",
+            "AWSSDK.S3": "3.7.304.7",
             "AWSSDK.SecretsManager": "3.7.302.29",
             "Azure.Identity": "1.10.4",
             "Azure.Security.KeyVault.Secrets": "4.5.0",
@@ -513,6 +515,7 @@
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+          "C:\\dev\\DataPlatform\\NuGet.Config",
           "C:\\Users\\urido\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -521,9 +524,9 @@
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://www.myget.org/F/elsa/api/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
@@ -572,6 +575,7 @@
             "AspNetCore.HealthChecks.Redis": "8.0.0",
             "AspNetCore.HealthChecks.SqlServer": "8.0.0",
             "AspNetCore.HealthChecks.Uris": "8.0.0",
+            "AWSSDK.S3": "3.7.304.7",
             "AWSSDK.SecretsManager": "3.7.302.29",
             "Azure.Identity": "1.10.4",
             "Azure.Security.KeyVault.Secrets": "4.5.0",

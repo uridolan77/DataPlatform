@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "nqk8Y4vsqvs=",
+  "dgSpecHash": "YrhQlpepYPs=",
   "success": true,
   "projectFilePath": "C:\\dev\\DataPlatform\\src\\GenericDataPlatform.IngestionService\\GenericDataPlatform.IngestionService.csproj",
   "expectedPackageFiles": [
@@ -203,6 +203,12 @@
     "C:\\Users\\urido\\.nuget\\packages\\zstdsharp.port\\0.7.1\\zstdsharp.port.0.7.1.nupkg.sha512"
   ],
   "logs": [
+    {
+      "code": "NU1507",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "There are 2 package sources defined in your configuration. When using central package management, please map your package sources with package source mapping (https://aka.ms/nuget-package-source-mapping) or specify a single package source. The following sources are defined: nuget.org, MyGet-Elsa"
+    },
     {
       "code": "NU1903",
       "level": "Warning",

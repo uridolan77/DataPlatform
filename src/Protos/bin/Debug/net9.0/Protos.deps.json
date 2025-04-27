@@ -8,7 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "Protos/1.0.0": {
         "dependencies": {
-          "Google.Protobuf": "3.25.1",
+          "Google.Protobuf": "3.27.1",
           "Grpc.Net.Client": "2.59.0",
           "Grpc.Tools": "2.59.0"
         },
@@ -16,11 +16,11 @@
           "Protos.dll": {}
         }
       },
-      "Google.Protobuf/3.25.1": {
+      "Google.Protobuf/3.27.1": {
         "runtime": {
           "lib/net5.0/Google.Protobuf.dll": {
-            "assemblyVersion": "3.25.1.0",
-            "fileVersion": "3.25.1.0"
+            "assemblyVersion": "3.27.1.0",
+            "fileVersion": "3.27.1.0"
           }
         }
       },
@@ -83,12 +83,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Google.Protobuf/3.25.1": {
+    "Google.Protobuf/3.27.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Sw9bq4hOD+AaS3RrnmP5IT25cyZ/T1qpM0e8+G+23Nojhv7+ScJFPEAQo1m4EFQWhXoI4FRZDrK+wjHCPw9yxg==",
-      "path": "google.protobuf/3.25.1",
-      "hashPath": "google.protobuf.3.25.1.nupkg.sha512"
+      "sha512": "sha512-7IVz9TzhYCZ8qY0rPhXUnyJSXYdshUqmmxmTI763XmDDSJJFnyfKH43FFcMJu/CZgBcE98xlFztrKwhzcRkiPg==",
+      "path": "google.protobuf/3.27.1",
+      "hashPath": "google.protobuf.3.27.1.nupkg.sha512"
     },
     "Grpc.Core.Api/2.59.0": {
       "type": "package",

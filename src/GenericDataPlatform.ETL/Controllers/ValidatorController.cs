@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GenericDataPlatform.Common.Models;
+using GenericDataPlatform.ETL.Models;
 using GenericDataPlatform.ETL.Validators;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,13 +16,13 @@ namespace GenericDataPlatform.ETL.Controllers
     {
         private readonly IEnumerable<IValidator> _validators;
         private readonly ILogger<ValidatorController> _logger;
-        
+
         public ValidatorController(IEnumerable<IValidator> validators, ILogger<ValidatorController> logger)
         {
             _validators = validators;
             _logger = logger;
         }
-        
+
         [HttpGet]
         public ActionResult<IEnumerable<ValidatorInfo>> GetValidators()
         {
@@ -32,20 +33,20 @@ namespace GenericDataPlatform.ETL.Controllers
                 Description = GetDescription(v.Type),
                 SupportedRules = GetSupportedRules(v.Type)
             });
-            
+
             return Ok(validators);
         }
-        
+
         [HttpGet("{type}")]
         public ActionResult<ValidatorInfo> GetValidator(string type)
         {
             var validator = _validators.FirstOrDefault(v => v.Type.Equals(type, StringComparison.OrdinalIgnoreCase));
-            
+
             if (validator == null)
             {
                 return NotFound();
             }
-            
+
             var validatorInfo = new ValidatorInfo
             {
                 Type = validator.Type,
@@ -53,24 +54,24 @@ namespace GenericDataPlatform.ETL.Controllers
                 Description = GetDescription(validator.Type),
                 SupportedRules = GetSupportedRules(validator.Type)
             };
-            
+
             return Ok(validatorInfo);
         }
-        
+
         [HttpPost("validate")]
         public async Task<IActionResult> Validate([FromBody] ValidateRequest request)
         {
             try
             {
                 var validator = _validators.FirstOrDefault(v => v.Type.Equals(request.ValidatorType, StringComparison.OrdinalIgnoreCase));
-                
+
                 if (validator == null)
                 {
                     return NotFound($"Validator of type '{request.ValidatorType}' not found");
                 }
-                
+
                 var result = await validator.ValidateAsync(request.Input, request.Configuration, request.Source);
-                
+
                 return Ok(result);
             }
             catch (ValidationException ex)
@@ -84,7 +85,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
-        
+
         private string GetDisplayName(string type)
         {
             return type switch
@@ -94,7 +95,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 _ => type
             };
         }
-        
+
         private string GetDescription(string type)
         {
             return type switch
@@ -104,11 +105,11 @@ namespace GenericDataPlatform.ETL.Controllers
                 _ => $"Validate data using {type}"
             };
         }
-        
+
         private List<ValidatorRule> GetSupportedRules(string type)
         {
             var rules = new List<ValidatorRule>();
-            
+
             switch (type.ToLowerInvariant())
             {
                 case "schema":
@@ -173,7 +174,7 @@ namespace GenericDataPlatform.ETL.Controllers
                         }
                     });
                     break;
-                
+
                 case "dataquality":
                     rules.Add(new ValidatorRule
                     {
@@ -266,11 +267,11 @@ namespace GenericDataPlatform.ETL.Controllers
                     });
                     break;
             }
-            
+
             return rules;
         }
     }
-    
+
     public class ValidatorInfo
     {
         public string Type { get; set; }
@@ -278,7 +279,7 @@ namespace GenericDataPlatform.ETL.Controllers
         public string Description { get; set; }
         public List<ValidatorRule> SupportedRules { get; set; }
     }
-    
+
     public class ValidatorRule
     {
         public string Name { get; set; }
@@ -286,15 +287,9 @@ namespace GenericDataPlatform.ETL.Controllers
         public string Description { get; set; }
         public List<RuleParameter> Parameters { get; set; }
     }
-    
-    public class RuleParameter
-    {
-        public string Name { get; set; }
-        public string DisplayName { get; set; }
-        public string Type { get; set; }
-        public bool IsRequired { get; set; }
-    }
-    
+
+
+
     public class ValidateRequest
     {
         public string ValidatorType { get; set; }

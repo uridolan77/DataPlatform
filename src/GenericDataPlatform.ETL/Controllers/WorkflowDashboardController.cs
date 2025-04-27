@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GenericDataPlatform.ETL.Workflows;
+using GenericDataPlatform.ETL.Workflows.Interfaces;
 using GenericDataPlatform.ETL.Workflows.Models;
 using GenericDataPlatform.ETL.Workflows.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ namespace GenericDataPlatform.ETL.Controllers
         private readonly IWorkflowEngine _workflowEngine;
         private readonly IWorkflowMonitor _monitor;
         private readonly ILogger<WorkflowDashboardController> _logger;
-        
+
         public WorkflowDashboardController(
             IWorkflowRepository repository,
             IWorkflowEngine workflowEngine,
@@ -29,7 +30,7 @@ namespace GenericDataPlatform.ETL.Controllers
             _monitor = monitor;
             _logger = logger;
         }
-        
+
         /// <summary>
         /// Gets a list of workflow definitions
         /// </summary>
@@ -47,7 +48,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting workflows");
             }
         }
-        
+
         /// <summary>
         /// Gets a workflow definition by ID
         /// </summary>
@@ -57,12 +58,12 @@ namespace GenericDataPlatform.ETL.Controllers
             try
             {
                 var workflow = await _repository.GetWorkflowByIdAsync(id, version);
-                
+
                 if (workflow == null)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok(workflow);
             }
             catch (Exception ex)
@@ -71,7 +72,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting workflow");
             }
         }
-        
+
         /// <summary>
         /// Gets workflow versions
         /// </summary>
@@ -89,7 +90,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting workflow versions");
             }
         }
-        
+
         /// <summary>
         /// Gets recent workflow executions
         /// </summary>
@@ -107,7 +108,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting recent executions");
             }
         }
-        
+
         /// <summary>
         /// Gets a workflow execution by ID
         /// </summary>
@@ -117,12 +118,12 @@ namespace GenericDataPlatform.ETL.Controllers
             try
             {
                 var execution = await _repository.GetExecutionByIdAsync(id);
-                
+
                 if (execution == null)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok(execution);
             }
             catch (Exception ex)
@@ -131,7 +132,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting execution");
             }
         }
-        
+
         /// <summary>
         /// Gets workflow execution history
         /// </summary>
@@ -149,7 +150,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting execution history");
             }
         }
-        
+
         /// <summary>
         /// Gets workflow metrics
         /// </summary>
@@ -167,7 +168,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting workflow metrics");
             }
         }
-        
+
         /// <summary>
         /// Gets execution summaries for a workflow
         /// </summary>
@@ -185,7 +186,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting execution summaries");
             }
         }
-        
+
         /// <summary>
         /// Gets timeline events for a workflow execution
         /// </summary>
@@ -203,7 +204,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error getting timeline events");
             }
         }
-        
+
         /// <summary>
         /// Cancels a workflow execution
         /// </summary>
@@ -213,12 +214,12 @@ namespace GenericDataPlatform.ETL.Controllers
             try
             {
                 var result = await _workflowEngine.CancelExecutionAsync(id);
-                
+
                 if (!result)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok();
             }
             catch (Exception ex)
@@ -227,7 +228,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error cancelling execution");
             }
         }
-        
+
         /// <summary>
         /// Pauses a workflow execution
         /// </summary>
@@ -237,12 +238,12 @@ namespace GenericDataPlatform.ETL.Controllers
             try
             {
                 var result = await _workflowEngine.PauseExecutionAsync(id);
-                
+
                 if (!result)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok();
             }
             catch (Exception ex)
@@ -251,7 +252,7 @@ namespace GenericDataPlatform.ETL.Controllers
                 return StatusCode(500, "Error pausing execution");
             }
         }
-        
+
         /// <summary>
         /// Resumes a workflow execution
         /// </summary>
@@ -261,12 +262,12 @@ namespace GenericDataPlatform.ETL.Controllers
             try
             {
                 var result = await _workflowEngine.ResumeExecutionAsync(id);
-                
+
                 if (!result)
                 {
                     return NotFound();
                 }
-                
+
                 return Ok();
             }
             catch (Exception ex)

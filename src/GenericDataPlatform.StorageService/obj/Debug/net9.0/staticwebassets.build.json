@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "0mgKz589HfO/Uzo6xJnHt5Kjz2WuNC/XRQEQJNa1/lE=",
+  "Source": "GenericDataPlatform.StorageService",
+  "BasePath": "_content/GenericDataPlatform.StorageService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
