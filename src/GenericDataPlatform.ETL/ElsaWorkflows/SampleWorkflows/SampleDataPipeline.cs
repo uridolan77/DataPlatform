@@ -1,10 +1,14 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Linq;
 using Elsa.Activities.Console;
 using Elsa.Activities.ControlFlow;
 using Elsa.Activities.Http;
 using Elsa.Builders;
+using Elsa.Services.Models;
+using Elsa.Services;
+using Elsa.Models;
 using GenericDataPlatform.Common.Models;
 using GenericDataPlatform.ETL.ElsaWorkflows.Activities;
 using NodaTime;
@@ -46,7 +50,7 @@ namespace GenericDataPlatform.ETL.ElsaWorkflows.SampleWorkflows
                     {
                         Id = "sample-rest-api",
                         Name = "Sample REST API",
-                        Type = DataSourceType.Rest,
+                        Type = DataSourceType.RestApi,
                         ConnectionProperties = new System.Collections.Generic.Dictionary<string, string>
                         {
                             ["baseUrl"] = "https://jsonplaceholder.typicode.com"
@@ -54,7 +58,7 @@ namespace GenericDataPlatform.ETL.ElsaWorkflows.SampleWorkflows
                     }))
                 .Then<WriteLine>(activity => activity
                     .WithText(context => $"Extracted {((System.Collections.Generic.IEnumerable<dynamic>)context.GetActivityOutput("Extract"))?.Count() ?? 0} records"))
-                
+
                 // Transform the data
                 .Then<TransformActivity>(activity => activity
                     .WithId("Transform")
@@ -76,7 +80,7 @@ namespace GenericDataPlatform.ETL.ElsaWorkflows.SampleWorkflows
                     }))
                 .Then<WriteLine>(activity => activity
                     .WithText(context => $"Transformed {((System.Collections.Generic.IEnumerable<dynamic>)context.GetActivityOutput("Transform"))?.Count() ?? 0} records"))
-                
+
                 // Validate the data
                 .Then<ValidateActivity>(activity => activity
                     .WithId("Validate")
@@ -101,7 +105,7 @@ namespace GenericDataPlatform.ETL.ElsaWorkflows.SampleWorkflows
                         },
                         failOnError = false
                     }))
-                
+
                 // Branch based on validation result
                 .Then<If>(activity => activity
                     .WithId("ValidationBranch")
@@ -129,7 +133,7 @@ namespace GenericDataPlatform.ETL.ElsaWorkflows.SampleWorkflows
                             }))
                         .Then<WriteLine>(activity => activity
                             .WithText(context => $"Enriched {((System.Collections.Generic.IEnumerable<dynamic>)context.GetActivityOutput("Enrich"))?.Count() ?? 0} records"))
-                        
+
                         // Load the data
                         .Then<LoadActivity>(activity => activity
                             .WithId("Load")

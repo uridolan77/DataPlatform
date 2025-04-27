@@ -29,20 +29,22 @@ builder.Services.AddSwaggerGen(c =>
 var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
 
 // Default HTTP client with resilience policies
-builder.Services.AddHttpClient()
-    .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetRetryPolicy(logger))
-    .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetCircuitBreakerPolicy(logger))
-    .AddPolicyHandler((services, request) => HttpClientResiliencePolicies.GetTimeoutPolicy(logger));
+builder.Services.AddHttpClient("DefaultClient", client => {
+    client.DefaultRequestHeaders.Add("User-Agent", "GenericDataPlatform.IngestionService");
+})
+    .AddPolicyHandler(HttpClientResiliencePolicies.GetRetryPolicy(logger))
+    .AddPolicyHandler(HttpClientResiliencePolicies.GetCircuitBreakerPolicy(logger))
+    .AddPolicyHandler(HttpClientResiliencePolicies.GetTimeoutPolicy(logger));
 
 // Named HTTP client for REST API connector
 builder.Services.AddHttpClient("RestApiClient")
-    .AddPolicyHandler((services, request) =>
+    .AddPolicyHandler((request) =>
     {
-        request.SetPolicyExecutionContext(new Context
+        var policyContext = new Context
         {
             ["url"] = request.RequestUri?.ToString()
-        });
-        return HttpClientResiliencePolicies.GetCombinedPolicy(logger);
+        };
+        return HttpClientResiliencePolicies.GetCombinedPolicy(logger).WithPolicyKey("RestApiClient");
     });
 
 // Register database connectors

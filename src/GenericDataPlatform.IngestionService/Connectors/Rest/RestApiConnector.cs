@@ -96,8 +96,8 @@ namespace GenericDataPlatform.IngestionService.Connectors.Rest
                     // Check if there's a request body
                     if (parameters != null && parameters.TryGetValue("body", out var body))
                     {
-                        var content = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
-                        response = await client.PostAsync(requestUrl, content);
+                        var requestContent = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
+                        response = await client.PostAsync(requestUrl, requestContent);
                     }
                     else
                     {

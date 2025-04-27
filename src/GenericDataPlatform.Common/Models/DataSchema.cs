@@ -175,6 +175,8 @@ namespace GenericDataPlatform.Common.Models
         public decimal? MaxValue { get; set; }
         public string[] AllowedValues { get; set; }
         public string CustomValidation { get; set; } // Expression or reference to validation function
+        public int? Precision { get; set; } // For decimal/numeric types
+        public int? Scale { get; set; } // For decimal/numeric types
 
         // Create a deep clone of the validation rules
         public ValidationRules Clone()
@@ -186,7 +188,9 @@ namespace GenericDataPlatform.Common.Models
                 Pattern = Pattern,
                 MinValue = MinValue,
                 MaxValue = MaxValue,
-                CustomValidation = CustomValidation
+                CustomValidation = CustomValidation,
+                Precision = Precision,
+                Scale = Scale
             };
 
             // Clone allowed values

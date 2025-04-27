@@ -20,7 +20,9 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             try
             {
                 // Try to create a consumer
-                using var consumer = await CreateConsumerAsync(source);
+                var consumer = await CreateConsumerAsync(source);
+                // Close the consumer when done
+                CloseConsumer(consumer);
                 return true;
             }
             catch (Exception ex)
@@ -36,32 +38,33 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             {
                 // Extract parameters
                 int maxMessages = 100; // Default to 100 messages
-                if (parameters != null && parameters.TryGetValue("maxMessages", out var maxMessagesObj) && 
+                if (parameters != null && parameters.TryGetValue("maxMessages", out var maxMessagesObj) &&
                     int.TryParse(maxMessagesObj.ToString(), out var maxMessagesValue))
                 {
                     maxMessages = maxMessagesValue;
                 }
-                
+
                 int timeoutMs = 5000; // Default to 5 seconds
-                if (parameters != null && parameters.TryGetValue("timeoutMs", out var timeoutObj) && 
+                if (parameters != null && parameters.TryGetValue("timeoutMs", out var timeoutObj) &&
                     int.TryParse(timeoutObj.ToString(), out var timeoutValue))
                 {
                     timeoutMs = timeoutValue;
                 }
-                
+
                 // Create a consumer
-                using var consumer = await CreateConsumerAsync(source);
-                
+                var consumer = await CreateConsumerAsync(source);
+                try {
+
                 // Consume messages
                 var records = new List<DataRecord>();
                 var cts = new CancellationTokenSource(timeoutMs);
-                
+
                 try
                 {
                     while (records.Count < maxMessages && !cts.IsCancellationRequested)
                     {
                         var message = await ConsumeMessageAsync(consumer, cts.Token);
-                        
+
                         if (message != null)
                         {
                             var record = ConvertMessageToDataRecord(message, source);
@@ -73,8 +76,14 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 {
                     // Timeout expired, return what we have
                 }
-                
-                return records;
+
+                    return records;
+                }
+                finally
+                {
+                    // Close the consumer when done
+                    CloseConsumer(consumer);
+                }
             }
             catch (Exception ex)
             {
@@ -89,7 +98,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             {
                 // Create a consumer
                 var consumer = await CreateConsumerAsync(source);
-                
+
                 // Return an async enumerable that consumes messages
                 return ConsumeMessagesAsyncEnumerable(consumer, source);
             }
@@ -110,9 +119,9 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     ["maxMessages"] = 10,
                     ["timeoutMs"] = 10000
                 };
-                
+
                 var sampleRecords = await FetchDataAsync(source, parameters);
-                
+
                 // Infer schema from the sample records
                 return InferSchemaFromSample(sampleRecords, source);
             }
@@ -144,11 +153,11 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
         }
 
         protected abstract Task<object> CreateConsumerAsync(DataSourceDefinition source);
-        
+
         protected abstract Task<object> ConsumeMessageAsync(object consumer, CancellationToken cancellationToken);
-        
+
         protected abstract void CloseConsumer(object consumer);
-        
+
         protected virtual async IAsyncEnumerable<DataRecord> ConsumeMessagesAsyncEnumerable(object consumer, DataSourceDefinition source)
         {
             try
@@ -156,7 +165,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 while (true)
                 {
                     var message = await ConsumeMessageAsync(consumer, CancellationToken.None);
-                    
+
                     if (message != null)
                     {
                         var record = ConvertMessageToDataRecord(message, source);
@@ -169,7 +178,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 CloseConsumer(consumer);
             }
         }
-        
+
         protected virtual DataRecord ConvertMessageToDataRecord(object message, DataSourceDefinition source)
         {
             // This is a base implementation that should be overridden by specific connectors
@@ -177,7 +186,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             {
                 ["message"] = message.ToString()
             };
-            
+
             return new DataRecord
             {
                 Id = Guid.NewGuid().ToString(),
@@ -194,7 +203,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 Version = "1.0"
             };
         }
-        
+
         protected virtual DataSchema InferSchemaFromSample(IEnumerable<DataRecord> sampleRecords, DataSourceDefinition source)
         {
             // Create a basic schema
@@ -208,7 +217,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-            
+
             // If we have sample records, infer schema from them
             if (sampleRecords != null && sampleRecords.GetEnumerator().MoveNext())
             {
@@ -221,7 +230,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                         fieldNames.Add(key);
                     }
                 }
-                
+
                 // For each field, determine its type and other properties
                 foreach (var fieldName in fieldNames)
                 {
@@ -236,7 +245,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                         Validation = new ValidationRules(),
                         NestedFields = new List<SchemaField>()
                     };
-                    
+
                     schema.Fields.Add(field);
                 }
             }
@@ -254,25 +263,25 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     NestedFields = new List<SchemaField>()
                 });
             }
-            
+
             return schema;
         }
-        
+
         protected virtual bool IsFieldRequired(string fieldName, IEnumerable<DataRecord> sampleRecords)
         {
             // A field is required if it's present in all records and never null
             return sampleRecords.All(r => r.Data.ContainsKey(fieldName) && r.Data[fieldName] != null);
         }
-        
+
         protected virtual bool IsFieldArray(string fieldName, IEnumerable<DataRecord> sampleRecords)
         {
             // Check if any value for this field is an array
-            return sampleRecords.Any(r => 
-                r.Data.ContainsKey(fieldName) && 
-                r.Data[fieldName] != null && 
+            return sampleRecords.Any(r =>
+                r.Data.ContainsKey(fieldName) &&
+                r.Data[fieldName] != null &&
                 r.Data[fieldName].GetType().IsArray);
         }
-        
+
         protected virtual FieldType InferFieldType(string fieldName, IEnumerable<DataRecord> sampleRecords)
         {
             // Get non-null values for this field
@@ -280,15 +289,15 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 .Where(r => r.Data.ContainsKey(fieldName) && r.Data[fieldName] != null)
                 .Select(r => r.Data[fieldName])
                 .ToList();
-            
+
             if (values.Count == 0)
             {
                 return FieldType.String; // Default to string if no values
             }
-            
+
             // Check if all values are of the same type
             var firstType = values[0].GetType();
-            
+
             if (values.All(v => v.GetType() == firstType))
             {
                 // All values are of the same type
@@ -299,7 +308,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     {
                         var jsonString = values[0].ToString();
                         var jsonDoc = JsonDocument.Parse(jsonString);
-                        
+
                         if (jsonDoc.RootElement.ValueKind == JsonValueKind.Object)
                         {
                             return FieldType.Json;
@@ -313,7 +322,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     {
                         // Not JSON
                     }
-                    
+
                     return FieldType.String;
                 }
                 else if (firstType == typeof(int) || firstType == typeof(long) || firstType == typeof(short))
@@ -347,7 +356,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 return FieldType.String;
             }
         }
-        
+
         protected virtual void LogError(Exception ex, string message, params object[] args)
         {
             _logger.LogError(ex, message, args);

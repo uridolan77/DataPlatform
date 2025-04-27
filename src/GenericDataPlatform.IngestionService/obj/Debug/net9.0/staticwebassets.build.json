@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "OuNU7CX9oUGSAgcMPzfrrXhkizSZ8jEMDAY5sSwFHpw=",
+  "Source": "GenericDataPlatform.IngestionService",
+  "BasePath": "_content/GenericDataPlatform.IngestionService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

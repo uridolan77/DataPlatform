@@ -19,19 +19,26 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
         {
             // In a real implementation, this would use the Azure.Messaging.EventHubs library
             // For this example, we'll just simulate the behavior
-            
+
             // Extract connection properties
-            if (!source.ConnectionProperties.TryGetValue("connectionString", out var connectionString) &&
-                (!source.ConnectionProperties.TryGetValue("fullyQualifiedNamespace", out var fullyQualifiedNamespace) ||
-                 !source.ConnectionProperties.TryGetValue("eventHubName", out var eventHubName)))
+            string connectionString = null;
+            string fullyQualifiedNamespace = null;
+            string eventHubName = null;
+
+            source.ConnectionProperties.TryGetValue("connectionString", out connectionString);
+            source.ConnectionProperties.TryGetValue("fullyQualifiedNamespace", out fullyQualifiedNamespace);
+            source.ConnectionProperties.TryGetValue("eventHubName", out eventHubName);
+
+            if (string.IsNullOrEmpty(connectionString) &&
+                (string.IsNullOrEmpty(fullyQualifiedNamespace) || string.IsNullOrEmpty(eventHubName)))
             {
                 throw new ArgumentException("Either connectionString or fullyQualifiedNamespace and eventHubName are required for Event Hubs connection");
             }
-            
+
             // Get consumer group
-            var consumerGroup = source.ConnectionProperties.TryGetValue("consumerGroup", out var consumerGroupValue) ? 
+            var consumerGroup = source.ConnectionProperties.TryGetValue("consumerGroup", out var consumerGroupValue) ?
                 consumerGroupValue : "$Default";
-            
+
             // Create a simulated Event Hubs consumer
             var consumer = new SimulatedEventHubsConsumer
             {
@@ -40,7 +47,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                 EventHubName = source.ConnectionProperties.TryGetValue("eventHubName", out var ehName) ? ehName : null,
                 ConsumerGroup = consumerGroup
             };
-            
+
             return await Task.FromResult(consumer);
         }
 
@@ -50,7 +57,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             {
                 // Simulate consuming a message
                 await Task.Delay(100, cancellationToken); // Simulate some delay
-                
+
                 // Generate a random message
                 var message = new SimulatedEventHubsMessage
                 {
@@ -65,10 +72,10 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                         ["CorrelationId"] = Guid.NewGuid().ToString()
                     }
                 };
-                
+
                 return message;
             }
-            
+
             throw new ArgumentException("Invalid consumer type");
         }
 
@@ -77,19 +84,19 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             // In a real implementation, this would close the Event Hubs consumer
             // For this example, we don't need to do anything
         }
-        
+
         protected override DataRecord ConvertMessageToDataRecord(object message, DataSourceDefinition source)
         {
             if (message is SimulatedEventHubsMessage eventHubsMessage)
             {
                 var data = new Dictionary<string, object>();
-                
+
                 // Try to parse the message body as JSON
                 try
                 {
                     var jsonDoc = JsonDocument.Parse(eventHubsMessage.Body);
                     var root = jsonDoc.RootElement;
-                    
+
                     if (root.ValueKind == JsonValueKind.Object)
                     {
                         // Extract properties from JSON object
@@ -100,7 +107,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                                 case JsonValueKind.String:
                                     data[property.Name] = property.Value.GetString();
                                     break;
-                                
+
                                 case JsonValueKind.Number:
                                     if (property.Value.TryGetInt64(out var intValue))
                                     {
@@ -111,19 +118,19 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                                         data[property.Name] = doubleValue;
                                     }
                                     break;
-                                
+
                                 case JsonValueKind.True:
                                     data[property.Name] = true;
                                     break;
-                                
+
                                 case JsonValueKind.False:
                                     data[property.Name] = false;
                                     break;
-                                
+
                                 case JsonValueKind.Null:
                                     data[property.Name] = null;
                                     break;
-                                
+
                                 case JsonValueKind.Object:
                                 case JsonValueKind.Array:
                                     // For complex types, store the JSON string
@@ -143,7 +150,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     // Not valid JSON, store the raw value
                     data["message"] = eventHubsMessage.Body;
                 }
-                
+
                 // Add Event Hubs-specific metadata
                 var metadata = new Dictionary<string, string>
                 {
@@ -153,13 +160,13 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     ["partitionId"] = eventHubsMessage.PartitionId,
                     ["enqueuedTime"] = eventHubsMessage.EnqueuedTime.ToString("o")
                 };
-                
+
                 // Add custom properties
                 foreach (var property in eventHubsMessage.Properties)
                 {
                     metadata[$"property:{property.Key}"] = property.Value?.ToString();
                 }
-                
+
                 return new DataRecord
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -172,22 +179,22 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                     Version = "1.0"
                 };
             }
-            
+
             return base.ConvertMessageToDataRecord(message, source);
         }
-        
+
         private string GenerateRandomMessageBody()
         {
             // Generate a random message body
             var random = new Random();
             var messageType = random.Next(3);
-            
+
             switch (messageType)
             {
                 case 0:
                     // Generate a simple string
                     return $"Message {Guid.NewGuid()}";
-                
+
                 case 1:
                     // Generate a JSON object
                     return JsonSerializer.Serialize(new
@@ -201,12 +208,12 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                         temperature = Math.Round(random.NextDouble() * 100, 2),
                         humidity = Math.Round(random.NextDouble() * 100, 2)
                     });
-                
+
                 case 2:
                     // Generate a JSON array
                     var items = new List<object>();
                     var itemCount = random.Next(1, 5);
-                    
+
                     for (int i = 0; i < itemCount; i++)
                     {
                         items.Add(new
@@ -217,14 +224,14 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
                             timestamp = DateTime.UtcNow.AddSeconds(-i)
                         });
                     }
-                    
+
                     return JsonSerializer.Serialize(items);
-                
+
                 default:
                     return "Default message";
             }
         }
-        
+
         // Simulated Event Hubs classes for demonstration
         private class SimulatedEventHubsConsumer
         {
@@ -235,7 +242,7 @@ namespace GenericDataPlatform.IngestionService.Connectors.Streaming
             public long NextSequenceNumber { get; set; } = 1;
             public long NextOffset { get; set; } = 0;
         }
-        
+
         private class SimulatedEventHubsMessage
         {
             public long SequenceNumber { get; set; }
