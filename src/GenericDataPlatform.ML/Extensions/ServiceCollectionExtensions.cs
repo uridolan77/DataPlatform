@@ -1,6 +1,10 @@
-using GenericDataPlatform.ML.Services;
+using GenericDataPlatform.ML.Services.Core;
+using GenericDataPlatform.ML.Services.Infrastructure;
 using GenericDataPlatform.ML.Training;
+using GenericDataPlatform.ML.Utils;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ML;
 
 namespace GenericDataPlatform.ML.Extensions
 {
@@ -12,14 +16,60 @@ namespace GenericDataPlatform.ML.Extensions
         /// <summary>
         /// Adds ML services to the service collection
         /// </summary>
-        public static IServiceCollection AddMLServices(this IServiceCollection services)
+        public static IServiceCollection AddMLServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register model trainer
+            // Register MLContext as singleton
+            services.AddSingleton<MLContext>(new MLContext(seed: 42));
+
+            // Register utility services
+            services.AddSingleton<IDynamicObjectGenerator, DynamicObjectGenerator>();
+            services.AddSingleton<ISchemaConverter, SchemaConverter>();
+
+            // Register training services
             services.AddSingleton<IModelTrainer, ModelTrainer>();
-            
-            // Register ML service
+            services.AddSingleton<IModelEvaluator, ModelEvaluator>();
+
+            // Register core services
             services.AddSingleton<IMLService, MLService>();
-            
+            services.AddSingleton<ITrainingOrchestrationService, TrainingOrchestrationService>();
+            services.AddSingleton<IModelManagementService, ModelManagementService>();
+            services.AddSingleton<IPredictionService, PredictionService>();
+
+            // Register infrastructure services
+            services.AddMLFlowIntegration(configuration);
+            services.AddSingleton<IModelRepository, ModelRepository>();
+            services.AddSingleton<IMetadataRepository, MetadataRepository>();
+
+            // Register background services for job processing
+            services.AddHostedService<TrainingJobProcessor>();
+            services.AddHostedService<BatchPredictionJobProcessor>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds MLflow integration to the service collection
+        /// </summary>
+        public static IServiceCollection AddMLFlowIntegration(this IServiceCollection services, IConfiguration configuration)
+        {
+            // Register MLflow options
+            services.Configure<MLflowOptions>(configuration.GetSection("MLflow"));
+
+            // Register MLflow integration service
+            services.AddSingleton<IMLflowIntegrationService, MLflowIntegrationService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds ML controllers to the service collection
+        /// </summary>
+        public static IServiceCollection AddMLControllers(this IServiceCollection services)
+        {
+            services.AddControllers()
+                .AddApplicationPart(typeof(ServiceCollectionExtensions).Assembly)
+                .AddControllersAsServices();
+
             return services;
         }
     }
